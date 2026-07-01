@@ -1,0 +1,40 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: navigo_backend
+    ports:
+      - "8000:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - .:/app
+      - /app/var       # <-- CRUCIAL: Isolates cache and logs from Windows filesystem syncing
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - SERVER_NAME=:80
+      - APP_ENV=dev
+      - APP_SECRET=NaviGOSuperSecretDevKey123!
+      - DATABASE_URL=postgresql://symfony:LocalDevPassword123!@database:5432/navigo?serverVersion=16&charset=utf8
+    depends_on:
+      - database
+
+  database:
+    image: postgres:16-alpine
+    container_name: navigo_postgres
+    environment:
+      POSTGRES_DB: navigo
+      POSTGRES_USER: symfony
+      POSTGRES_PASSWORD: LocalDevPassword123!
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:
