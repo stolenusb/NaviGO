@@ -11,6 +11,7 @@ services:
     volumes:
       - .:/app
       - /app/var       # <-- CRUCIAL: Isolates cache and logs from Windows filesystem syncing
+      - /app/public/bundles
       - caddy_data:/data
       - caddy_config:/config
     environment:
