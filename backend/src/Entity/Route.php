@@ -4,8 +4,10 @@ namespace App\Entity;
 
 use App\Repository\RouteRepository;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
 
 #[ORM\Entity(repositoryClass: RouteRepository::class)]
+#[ApiResource] // <-- MUST BE HERE
 class Route
 {
     #[ORM\Id]
