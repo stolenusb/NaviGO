@@ -1,7 +1,12 @@
 security:
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordApiUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
         App\Entity\User: 'auto'
+
+    role_hierarchy:
+        ROLE_ADMIN:       [ROLE_PARTNER, ROLE_CUSTOMER]
+        ROLE_PARTNER:     [ROLE_USER]
+        ROLE_CUSTOMER:    [ROLE_USER]
 
     providers:
         app_user_provider:
@@ -32,7 +37,9 @@ security:
             jwt: ~
 
     access_control:
-        # Allow anonymous access to login so users can authenticate
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        # Open up POST requests for registration so new users can sign up
+        - { path: ^/api/customers, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api/partners, roles: PUBLIC_ACCESS, methods: [POST] }
         # Secure the rest of the API
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }

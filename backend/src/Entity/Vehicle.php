@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\VehicleRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Metadata\ApiResource;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
@@ -15,15 +16,24 @@ class Vehicle
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 255)]
     #[ORM\Column(length: 255)]
     private ?string $brand = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^[A-Z0-9\-]{2,15}$/', message: 'License plate must be alphanumeric (2-15 characters).')]
     #[ORM\Column(length: 255)]
     private ?string $licensePlate = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Positive]
+    #[Assert\LessThanOrEqual(100)]
     #[ORM\Column]
     private ?int $seatCapacity = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 255)]
     #[ORM\Column(length: 255)]
     private ?string $driverName = null;
 

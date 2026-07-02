@@ -4,8 +4,10 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Metadata\ApiResource;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -14,7 +16,7 @@ use ApiPlatform\Metadata\ApiResource;
 #[ORM\InheritanceType('JOINED')]
 #[ORM\DiscriminatorColumn(name: 'type', type: 'string')]
 #[ORM\DiscriminatorMap(['customer' => Customer::class, 'partner' => Partner::class, 'admin' => Administrator::class])]
-#[ApiResource]
+
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -22,6 +24,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Email]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -36,10 +41,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+    #[Groups(['user:write'])]
+    #[Assert\NotBlank(groups: ['create'])]
+    #[Assert\Length(min: 8, max: 4096)]
+    private ?string $plainPassword = null;
 
+    #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^\+?[0-9\s\-]{7,20}$/', message: 'Phone number must be valid (7-20 digits, optionally with + prefix).')]
     #[ORM\Column(length: 20)]
     private ?string $phone = null;
 
+    #[Groups(['user:read'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -77,14 +90,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
+     *
+     * Returns the roles assigned to this user.
+     * Role inheritance (e.g. ROLE_ADMIN → ROLE_PARTNER → ROLE_CUSTOMER → ROLE_USER)
+     * is handled by the security.yaml role_hierarchy configuration.
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_CUSTOMER
-        $roles[] = 'ROLE_CUSTOMER';
-
-        return array_unique($roles);
+        return $this->roles;
     }
 
     /**
@@ -110,6 +123,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $password;
 
         return $this;
+    }
+
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): static
+    {
+        $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+        $this->plainPassword = null;
     }
 
     /**

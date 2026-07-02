@@ -8,18 +8,32 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Metadata\ApiResource;
 
 #[ORM\Entity(repositoryClass: PartnerRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']]
+)]
 class Partner extends User
 {
+    #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 255)]
     #[ORM\Column(length: 255)]
     private ?string $companyName = null;
 
+    #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 10, max: 5000)]
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
+    #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 5, max: 255)]
     #[ORM\Column(length: 255)]
     private ?string $address = null;
 
@@ -59,6 +73,7 @@ class Partner extends User
         return $this;
     }
 
+    #[Groups(['user:read'])]
     #[ORM\Column(type: 'string', enumType: PartnerStatus::class)]
     private PartnerStatus $status = PartnerStatus::PENDING;
 
@@ -71,8 +86,12 @@ class Partner extends User
     public function __construct()
     {
         parent::__construct();
+        
         $this->vehicles = new ArrayCollection();
-    } // 2. Default to PENDING
+        $this->setRoles(['ROLE_PARTNER']);
+        // Ensures new partners automatically default to PENDING status
+        $this->setStatus(\App\Enum\PartnerStatus::PENDING); 
+    }
 
     public function getStatus(): PartnerStatus
     {
