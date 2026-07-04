@@ -41,5 +41,9 @@ security:
         # Open up POST requests for registration so new users can sign up
         - { path: ^/api/customers, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/partners, roles: PUBLIC_ACCESS, methods: [POST] }
+        # Public GET access for browsing trips, vehicles, and cities
+        - { path: ^/api/trips, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/vehicles, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/cities, roles: PUBLIC_ACCESS, methods: [GET] }
         # Secure the rest of the API
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }

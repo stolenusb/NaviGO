@@ -83,6 +83,12 @@ class Partner extends User
     #[ORM\OneToMany(targetEntity: Vehicle::class, mappedBy: 'Owner', orphanRemoval: true)]
     private Collection $vehicles;
 
+    /**
+     * @var Collection<int, Trip>
+     */
+    #[ORM\OneToMany(targetEntity: Trip::class, mappedBy: 'Partner', orphanRemoval: true)]
+    private Collection $trips;
+
     public function __construct()
     {
         parent::__construct();
@@ -90,7 +96,8 @@ class Partner extends User
         $this->vehicles = new ArrayCollection();
         $this->setRoles(['ROLE_PARTNER']);
         // Ensures new partners automatically default to PENDING status
-        $this->setStatus(\App\Enum\PartnerStatus::PENDING); 
+        $this->setStatus(\App\Enum\PartnerStatus::PENDING);
+        $this->trips = new ArrayCollection(); 
     }
 
     public function getStatus(): PartnerStatus
@@ -128,6 +135,36 @@ class Partner extends User
             // set the owning side to null (unless already changed)
             if ($vehicle->getOwner() === $this) {
                 $vehicle->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Trip>
+     */
+    public function getTrips(): Collection
+    {
+        return $this->trips;
+    }
+
+    public function addTrip(Trip $trip): static
+    {
+        if (!$this->trips->contains($trip)) {
+            $this->trips->add($trip);
+            $trip->setPartner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrip(Trip $trip): static
+    {
+        if ($this->trips->removeElement($trip)) {
+            // set the owning side to null (unless already changed)
+            if ($trip->getPartner() === $this) {
+                $trip->setPartner(null);
             }
         }
 
