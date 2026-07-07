@@ -22,6 +22,14 @@ class Reservation
     #[ORM\Column(enumType: ReservationStatus::class)]
     private ?ReservationStatus $status = null;
 
+    #[ORM\ManyToOne(inversedBy: 'trip')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Customer $customer = null;
+
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Trip $trip = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -47,6 +55,30 @@ class Reservation
     public function setStatus(ReservationStatus $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getCustomer(): ?Customer
+    {
+        return $this->customer;
+    }
+
+    public function setCustomer(?Customer $customer): static
+    {
+        $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function getTrip(): ?Trip
+    {
+        return $this->trip;
+    }
+
+    public function setTrip(?Trip $trip): static
+    {
+        $this->trip = $trip;
 
         return $this;
     }

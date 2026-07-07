@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Enum\TripStatus;
 use App\Repository\TripRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -83,9 +85,16 @@ class Trip
     #[ORM\JoinColumn(nullable: false)]
     private ?Partner $partner = null;
 
+    /**
+     * @var Collection<int, Reservation>
+     */
+    #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'trip')]
+    private Collection $reservations;
+
     public function __construct()
     {
         $this->status = TripStatus::SCHEDULED;
+        $this->reservations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -173,6 +182,36 @@ class Trip
     public function setPartner(?Partner $partner): static
     {
         $this->partner = $partner;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Reservation>
+     */
+    public function getReservations(): Collection
+    {
+        return $this->reservations;
+    }
+
+    public function addReservation(Reservation $reservation): static
+    {
+        if (!$this->reservations->contains($reservation)) {
+            $this->reservations->add($reservation);
+            $reservation->setTrip($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReservation(Reservation $reservation): static
+    {
+        if ($this->reservations->removeElement($reservation)) {
+            // set the owning side to null (unless already changed)
+            if ($reservation->getTrip() === $this) {
+                $reservation->setTrip(null);
+            }
+        }
 
         return $this;
     }
