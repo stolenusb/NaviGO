@@ -50,7 +50,7 @@ class Reservation
     #[ORM\Column(enumType: ReservationStatus::class)]
     private ReservationStatus $status = ReservationStatus::PENDING;
 
-    #[Assert\NotNull]
+    #[Groups(['reservation:read'])]
     #[ORM\ManyToOne(inversedBy: 'reservation')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Customer $customer = null;

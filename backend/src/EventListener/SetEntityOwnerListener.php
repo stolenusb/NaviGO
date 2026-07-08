@@ -2,7 +2,9 @@
 
 namespace App\EventListener;
 
+use App\Entity\Customer;
 use App\Entity\Partner;
+use App\Entity\Reservation;
 use App\Entity\Route;
 use App\Entity\Trip;
 use App\Entity\Vehicle;
@@ -19,11 +21,15 @@ class SetEntityOwnerListener
     {
         $entity = $args->getObject();
 
-        if (!$entity instanceof Vehicle && !$entity instanceof Trip && !$entity instanceof Route) {
+        if (!$entity instanceof Vehicle && !$entity instanceof Trip && !$entity instanceof Route && !$entity instanceof Reservation) {
             return;
         }
 
         $user = $this->security->getUser();
+
+        if($user instanceof Customer && $entity instanceof Reservation) {
+            $entity->setCustomer($user);
+        }
 
         if (!$user instanceof Partner) {
             return;
