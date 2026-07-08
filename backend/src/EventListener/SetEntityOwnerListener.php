@@ -3,6 +3,7 @@
 namespace App\EventListener;
 
 use App\Entity\Partner;
+use App\Entity\Route;
 use App\Entity\Trip;
 use App\Entity\Vehicle;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
@@ -18,7 +19,7 @@ class SetEntityOwnerListener
     {
         $entity = $args->getObject();
 
-        if (!$entity instanceof Vehicle && !$entity instanceof Trip) {
+        if (!$entity instanceof Vehicle && !$entity instanceof Trip && !$entity instanceof Route) {
             return;
         }
 
@@ -29,6 +30,10 @@ class SetEntityOwnerListener
         }
 
         if ($entity instanceof Vehicle && $entity->getOwner() === null) {
+            $entity->setOwner($user);
+        }
+
+        if ($entity instanceof Route && $entity->getOwner() === null) {
             $entity->setOwner($user);
         }
 

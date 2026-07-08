@@ -3,12 +3,37 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use App\Enum\ReservationStatus;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            security: 'is_granted("PUBLIC_ACCESS")',
+        ),
+        new Get(
+            security: 'is_granted("PUBLIC_ACCESS")',
+        ),
+        new Post(
+            security: 'is_granted("ROLE_CUSTOMER")',
+        ),
+        new Patch(
+            security: 'is_granted("ROLE_CUSTOMER")',
+        ),
+        new Delete(
+            security: 'is_granted("ROLE_CUSTOMER")',
+        ),
+    ]
+)]
 class Reservation
 {
     #[ORM\Id]
@@ -16,19 +41,29 @@ class Reservation
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     #[ORM\Column]
     private ?int $seatNumber = null;
 
+    #[Groups(['reservation:read'])]
     #[ORM\Column(enumType: ReservationStatus::class)]
-    private ?ReservationStatus $status = null;
+    private ReservationStatus $status = ReservationStatus::PENDING;
 
-    #[ORM\ManyToOne(inversedBy: 'trip')]
+    #[Assert\NotNull]
+    #[ORM\ManyToOne(inversedBy: 'reservation')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Customer $customer = null;
 
+    #[Assert\NotNull]
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Trip $trip = null;
+
+    public function __construct()
+    {
+        $this->status = ReservationStatus::PENDING;
+    }
 
     public function getId(): ?int
     {
@@ -47,7 +82,7 @@ class Reservation
         return $this;
     }
 
-    public function getStatus(): ?ReservationStatus
+    public function getStatus(): ReservationStatus
     {
         return $this->status;
     }

@@ -2,14 +2,38 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use App\Repository\RouteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RouteRepository::class)]
-#[ApiResource] // <-- MUST BE HERE
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            security: 'is_granted("PUBLIC_ACCESS")',
+        ),
+        new Get(
+            security: 'is_granted("PUBLIC_ACCESS")',
+        ),
+        new Post(
+            security: 'is_granted("ROLE_PARTNER")',
+        ),
+        new Patch(
+            security: 'is_granted("ROLE_PARTNER")',
+        ),
+        new Delete(
+            security: 'is_granted("ROLE_PARTNER")',
+        ),
+    ]
+)]
 class Route
 {
     #[ORM\Id]
@@ -17,13 +41,19 @@ class Route
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Assert\NotNull]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?City $departureCity = null;
 
+    #[Assert\NotNull]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?City $destinationCity = null;
+
+    #[ORM\ManyToOne(inversedBy: 'routes')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Partner $owner = null;
 
     /**
      * @var Collection<int, Trip>
@@ -61,6 +91,18 @@ class Route
     public function setDestinationCity(?City $destinationCity): static
     {
         $this->destinationCity = $destinationCity;
+
+        return $this;
+    }
+
+    public function getOwner(): ?Partner
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?Partner $owner): static
+    {
+        $this->owner = $owner;
 
         return $this;
     }

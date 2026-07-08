@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Partner;
+use App\Entity\Route;
 use App\Entity\Trip;
 use App\Entity\Vehicle;
 use Doctrine\ORM\QueryBuilder;
@@ -37,8 +38,8 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        // Only apply to Vehicle and Trip entities
-        if (!in_array($resourceClass, [Vehicle::class, Trip::class], true)) {
+        // Only apply to Vehicle, Trip, and Route entities
+        if (!in_array($resourceClass, [Vehicle::class, Trip::class, Route::class], true)) {
             return;
         }
 
@@ -55,6 +56,12 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
         if ($resourceClass === Vehicle::class) {
             // Filter vehicles where Owner matches the logged-in Partner
             $queryBuilder->andWhere(sprintf('%s.Owner = :current_partner', $rootAlias))
+                ->setParameter('current_partner', $user);
+        }
+
+        if ($resourceClass === Route::class) {
+            // Filter routes where owner matches the logged-in Partner
+            $queryBuilder->andWhere(sprintf('%s.owner = :current_partner', $rootAlias))
                 ->setParameter('current_partner', $user);
         }
 

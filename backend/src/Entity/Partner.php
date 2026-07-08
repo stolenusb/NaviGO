@@ -84,6 +84,12 @@ class Partner extends User
     private Collection $vehicles;
 
     /**
+     * @var Collection<int, Route>
+     */
+    #[ORM\OneToMany(targetEntity: Route::class, mappedBy: 'owner', orphanRemoval: true)]
+    private Collection $routes;
+
+    /**
      * @var Collection<int, Trip>
      */
     #[ORM\OneToMany(targetEntity: Trip::class, mappedBy: 'Partner', orphanRemoval: true)]
@@ -94,6 +100,7 @@ class Partner extends User
         parent::__construct();
         
         $this->vehicles = new ArrayCollection();
+        $this->routes = new ArrayCollection();
         $this->setRoles(['ROLE_PARTNER']);
         // Ensures new partners automatically default to PENDING status
         $this->setStatus(\App\Enum\PartnerStatus::PENDING);
@@ -135,6 +142,36 @@ class Partner extends User
             // set the owning side to null (unless already changed)
             if ($vehicle->getOwner() === $this) {
                 $vehicle->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Route>
+     */
+    public function getRoutes(): Collection
+    {
+        return $this->routes;
+    }
+
+    public function addRoute(Route $route): static
+    {
+        if (!$this->routes->contains($route)) {
+            $this->routes->add($route);
+            $route->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRoute(Route $route): static
+    {
+        if ($this->routes->removeElement($route)) {
+            // set the owning side to null (unless already changed)
+            if ($route->getOwner() === $this) {
+                $route->setOwner(null);
             }
         }
 

@@ -23,3 +23,9 @@ services:
     App\EventListener\SetEntityOwnerListener:
         tags:
             - { name: 'doctrine.event_listener', event: 'prePersist' }
+
+    # Register the reservation seats listener
+    App\EventListener\ReservationSeatsListener:
+        tags:
+            - { name: 'doctrine.event_listener', event: 'prePersist' }
+            - { name: 'doctrine.event_listener', event: 'preUpdate' }
