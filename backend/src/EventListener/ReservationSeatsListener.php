@@ -4,21 +4,58 @@ namespace App\EventListener;
 
 use App\Entity\Reservation;
 use App\Enum\ReservationStatus;
+use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Doctrine\ORM\Event\PreRemoveEventArgs;
 
 class ReservationSeatsListener
 {
-    public function prePersist(LifecycleEventArgs $args): void
+    public function prePersist(PrePersistEventArgs $args): void
     {
         $reservation = $args->getObject();
         if (!$reservation instanceof Reservation) {
             return;
         }
 
-        // Only decrement seats if the new reservation is created as CONFIRMED
-        if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
+        $trip = $reservation->getTrip();
+        if ($trip === null) {
+            return;
+        }
+
+        // 1. GATHER OCCUPIED SEATS (Gap-filling algorithm)
+        $occupiedSeats = [];
+        foreach ($trip->getReservations() as $existingRes) {
+            if ($existingRes->getStatus() !== ReservationStatus::CANCELLED && $existingRes->getSeatNumber() !== null) {
+                $occupiedSeats[] = $existingRes->getSeatNumber();
+            }
+        }
+
+        // Find the lowest available integer starting at 1
+        $assignedSeat = 1;
+        while (in_array($assignedSeat, $occupiedSeats, true)) {
+            $assignedSeat++;
+        }
+
+        // 2. VEHICLE CAPACITY SAFETY CHECK
+        // If your Vehicle entity has a capacity getter, let's make sure we aren't going over it
+        $vehicle = $trip->getVehicle();
+        if ($vehicle && method_exists($vehicle, 'getCapacity')) {
+            if ($assignedSeat > $vehicle->getCapacity()) {
+                throw new \RuntimeException('This vehicle layout is fully occupied. Cannot assign seat number.');
+            }
+        }
+
+        $reservation->setSeatNumber($assignedSeat);
+
+        // 3. DECREMENT TRIP SEATS
+        if ($reservation->getStatus() === ReservationStatus::CONFIRMED || $reservation->getStatus() === ReservationStatus::PENDING) {
             $this->decrementSeats($reservation);
+
+            // Force Doctrine to recognize the updated Trip
+            $em = $args->getObjectManager();
+            $uow = $em->getUnitOfWork();
+            $meta = $em->getClassMetadata(get_class($trip));
+            $uow->computeChangeSet($meta, $trip);
         }
     }
 
@@ -29,34 +66,58 @@ class ReservationSeatsListener
             return;
         }
 
-        // Only act when the status field changes
         if ($args->hasChangedField('status')) {
             $oldStatus = $args->getOldValue('status');
             $newStatus = $args->getNewValue('status');
+            $trip = $reservation->getTrip();
 
-            // PENDING → CONFIRMED: decrement Trip's availableSeats
-            if ($oldStatus === ReservationStatus::PENDING && $newStatus === ReservationStatus::CONFIRMED) {
-                $this->decrementSeats($reservation);
+            if ($trip === null) {
+                return;
             }
 
-            // CONFIRMED → CANCELLED: refund the seat back to Trip
-            if ($oldStatus === ReservationStatus::CONFIRMED && $newStatus === ReservationStatus::CANCELLED) {
+            // Refund seat back to trip if status changes to CANCELLED
+            if (($oldStatus === ReservationStatus::CONFIRMED || $oldStatus === ReservationStatus::PENDING) && $newStatus === ReservationStatus::CANCELLED) {
                 $this->incrementSeats($reservation);
+                
+                $em = $args->getObjectManager();
+                $uow = $em->getUnitOfWork();
+                $meta = $em->getClassMetadata(get_class($trip));
+                $uow->recomputeSingleEntityChangeSet($meta, $trip);
             }
         }
     }
 
     /**
-     * Decrements the Trip's availableSeats by 1.
-     * Throws if no seats remain.
+     * NEW: Handle hard DELETE requests via the API
      */
-    private function decrementSeats(Reservation $reservation): void
+    public function preRemove(PreRemoveEventArgs $args): void
     {
+        $reservation = $args->getObject();
+        if (!$reservation instanceof Reservation) {
+            return;
+        }
+
         $trip = $reservation->getTrip();
         if ($trip === null) {
             return;
         }
 
+        // Only refund the seat if the reservation being deleted was active/pending
+        // (If it was already CANCELLED, the seat was already refunded during the update phase)
+        if ($reservation->getStatus() !== ReservationStatus::CANCELLED) {
+            $this->incrementSeats($reservation);
+
+            // Force Doctrine to save the updated Trip during a deletion cycle
+            $em = $args->getObjectManager();
+            $uow = $em->getUnitOfWork();
+            $meta = $em->getClassMetadata(get_class($trip));
+            $uow->recomputeSingleEntityChangeSet($meta, $trip);
+        }
+    }
+
+    private function decrementSeats(Reservation $reservation): void
+    {
+        $trip = $reservation->getTrip();
         $currentSeats = $trip->getAvailableSeats();
 
         if ($currentSeats === null || $currentSeats <= 0) {
@@ -68,16 +129,9 @@ class ReservationSeatsListener
         $trip->setAvailableSeats($currentSeats - 1);
     }
 
-    /**
-     * Increments the Trip's availableSeats by 1 (seat refunded).
-     */
     private function incrementSeats(Reservation $reservation): void
     {
         $trip = $reservation->getTrip();
-        if ($trip === null) {
-            return;
-        }
-
         $currentSeats = $trip->getAvailableSeats();
         $trip->setAvailableSeats($currentSeats + 1);
     }

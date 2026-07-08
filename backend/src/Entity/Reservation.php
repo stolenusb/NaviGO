@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
@@ -41,8 +42,8 @@ class Reservation
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Assert\NotBlank]
-    #[Assert\Positive]
+    #[ApiProperty(writable: false)]
+    #[Groups(['reservation:read'])]
     #[ORM\Column]
     private ?int $seatNumber = null;
 
