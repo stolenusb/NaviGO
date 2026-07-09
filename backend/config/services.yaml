@@ -24,10 +24,9 @@ services:
         tags:
             - { name: 'doctrine.event_listener', event: 'prePersist' }
 
-    # Register the reservation seats listener
+    # Register the reservation seats listener (seat number cleanup on cancel/delete)
     App\EventListener\ReservationSeatsListener:
         tags:
-            - { name: 'doctrine.event_listener', event: 'prePersist' }
             - { name: 'doctrine.event_listener', event: 'preUpdate' }
             - { name: 'doctrine.event_listener', event: 'preRemove' }
     

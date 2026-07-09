@@ -11,11 +11,18 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use App\Enum\ReservationStatus;
 use App\Repository\ReservationRepository;
+use App\State\ReservationPersistProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
+#[ORM\Table(name: 'reservation')]
+#[ORM\UniqueConstraint(
+    name: 'UNIQ_CONFIRMED_SEAT',
+    columns: ['trip_id', 'seat_number'],
+    options: ['where' => '(status != \'CANCELLED\')'],
+)]
 #[ApiResource(
     operations: [
         new GetCollection(
@@ -26,6 +33,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Post(
             security: 'is_granted("ROLE_CUSTOMER")',
+            processor: ReservationPersistProcessor::class,
         ),
         new Patch(
             security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
@@ -76,7 +84,7 @@ class Reservation
         return $this->seatNumber;
     }
 
-    public function setSeatNumber(int $seatNumber): static
+    public function setSeatNumber(?int $seatNumber): static
     {
         $this->seatNumber = $seatNumber;
 

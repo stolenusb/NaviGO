@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -32,7 +33,7 @@ use ApiPlatform\Metadata\Delete;
             denormalizationContext: ['groups' => ['trip:write']]
         ),
         new Patch(
-            security: 'is_granted("ROLE_PARTNER")',
+            security: 'is_granted("ROLE_ADMIN") or is_granted("ROLE_PARTNER") and object.getPartner() == user',
             denormalizationContext: ['groups' => ['trip:write']]
         ),
         new Delete(
@@ -58,10 +59,7 @@ class Trip
     #[ORM\Column]
     private ?float $price = null;
 
-    #[Groups(['trip:read', 'trip:write'])]
-    #[Assert\NotBlank]
-    #[Assert\Positive]
-    #[ORM\Column]
+    #[Groups(['trip:read'])]
     private ?int $availableSeats = null;
 
     #[Groups(['trip:read'])]
@@ -135,14 +133,12 @@ class Trip
 
     public function getAvailableSeats(): ?int
     {
-        return $this->availableSeats;
-    }
+        // Compute available seats on-the-fly from vehicle capacity minus confirmed reservations
+        if ($this->vehicle === null || $this->vehicle->getSeatCapacity() === null) {
+            return null;
+        }
 
-    public function setAvailableSeats(int $availableSeats): static
-    {
-        $this->availableSeats = $availableSeats;
-
-        return $this;
+        return $this->vehicle->getSeatCapacity();
     }
 
     public function getStatus(): TripStatus
@@ -150,11 +146,35 @@ class Trip
         return $this->status;
     }
 
-    public function setStatus(TripStatus $status): static
+    private function setStatus(TripStatus $status): static
     {
         $this->status = $status;
 
         return $this;
+    }
+
+    public function start(): void
+    {
+        if (!$this->status->canTransitionTo(TripStatus::IN_PROGRESS)) {
+            throw new BadRequestHttpException(sprintf('Cannot start a trip that is %s.', $this->status->value));
+        }
+        $this->status = TripStatus::IN_PROGRESS;
+    }
+
+    public function complete(): void
+    {
+        if (!$this->status->canTransitionTo(TripStatus::COMPLETED)) {
+            throw new BadRequestHttpException(sprintf('Cannot complete a trip that is %s.', $this->status->value));
+        }
+        $this->status = TripStatus::COMPLETED;
+    }
+
+    public function cancel(): void
+    {
+        if (!$this->status->canTransitionTo(TripStatus::CANCELED)) {
+            throw new BadRequestHttpException(sprintf('Cannot cancel a trip that is %s.', $this->status->value));
+        }
+        $this->status = TripStatus::CANCELED;
     }
 
     public function getRoute(): ?Route
