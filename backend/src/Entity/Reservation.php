@@ -28,10 +28,10 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: 'is_granted("ROLE_CUSTOMER")',
         ),
         new Patch(
-            security: 'is_granted("ROLE_CUSTOMER")',
+            security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
         new Delete(
-            security: 'is_granted("ROLE_CUSTOMER")',
+            security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
     ]
 )]
@@ -49,7 +49,7 @@ class Reservation
 
     #[Groups(['reservation:read'])]
     #[ORM\Column(enumType: ReservationStatus::class)]
-    private ReservationStatus $status = ReservationStatus::PENDING;
+    private ReservationStatus $status = ReservationStatus::CONFIRMED;
 
     #[Groups(['reservation:read'])]
     #[ORM\ManyToOne(inversedBy: 'reservation')]
@@ -63,7 +63,7 @@ class Reservation
 
     public function __construct()
     {
-        $this->status = ReservationStatus::PENDING;
+        $this->status = ReservationStatus::CONFIRMED;
     }
 
     public function getId(): ?int

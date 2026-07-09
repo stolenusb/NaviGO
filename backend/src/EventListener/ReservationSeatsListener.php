@@ -48,7 +48,7 @@ class ReservationSeatsListener
         $reservation->setSeatNumber($assignedSeat);
 
         // 3. DECREMENT TRIP SEATS
-        if ($reservation->getStatus() === ReservationStatus::CONFIRMED || $reservation->getStatus() === ReservationStatus::PENDING) {
+        if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
             $this->decrementSeats($reservation);
 
             // Force Doctrine to recognize the updated Trip
@@ -76,7 +76,7 @@ class ReservationSeatsListener
             }
 
             // Refund seat back to trip if status changes to CANCELLED
-            if (($oldStatus === ReservationStatus::CONFIRMED || $oldStatus === ReservationStatus::PENDING) && $newStatus === ReservationStatus::CANCELLED) {
+            if ($oldStatus === ReservationStatus::CONFIRMED && $newStatus === ReservationStatus::CANCELLED) {
                 $this->incrementSeats($reservation);
                 
                 $em = $args->getObjectManager();
@@ -102,9 +102,9 @@ class ReservationSeatsListener
             return;
         }
 
-        // Only refund the seat if the reservation being deleted was active/pending
+        // Only refund the seat if the reservation being deleted was confirmed
         // (If it was already CANCELLED, the seat was already refunded during the update phase)
-        if ($reservation->getStatus() !== ReservationStatus::CANCELLED) {
+        if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
             $this->incrementSeats($reservation);
 
             // Force Doctrine to save the updated Trip during a deletion cycle

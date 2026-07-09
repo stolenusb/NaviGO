@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Customer;
+use App\Entity\Reservation;
+use App\Entity\Trip;
+use App\Entity\Partner;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[AsController]
+class PartnerReservationController extends AbstractController
+{
+    #[Route(
+        path: '/api/reservations/for-customer',
+        name: 'api_reservation_for_customer',
+        methods: ['POST'],
+    )]
+    #[IsGranted('ROLE_PARTNER')]
+    public function createForCustomer(
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+
+        $customerId = $data['customerId'] ?? null;
+        $tripId = $data['tripId'] ?? null;
+
+        if (!$customerId || !$tripId) {
+            return $this->json(['error' => 'customerId and tripId are required.'], 400);
+        }
+
+        // Accept both raw IDs (14) and IRIs (/api/customers/14)
+        $customerId = is_string($customerId) ? (int) basename(parse_url($customerId, PHP_URL_PATH)) : (int) $customerId;
+        $tripId = is_string($tripId) ? (int) basename(parse_url($tripId, PHP_URL_PATH)) : (int) $tripId;
+
+        $customer = $entityManager->getRepository(Customer::class)->find($customerId);
+        $trip = $entityManager->getRepository(Trip::class)->find($tripId);
+
+        if (!$customer) {
+            return $this->json(['error' => 'Customer not found.'], 404);
+        }
+
+        if (!$trip) {
+            return $this->json(['error' => 'Trip not found.'], 404);
+        }
+
+        // Ensure the trip belongs to the logged-in partner
+        $partner = $this->getUser();
+        if (!$partner instanceof Partner) {
+            return $this->json(['error' => 'Unauthorized.'], 403);
+        }
+
+        $tripPartner = $trip->getPartner();
+        if ($tripPartner === null || $tripPartner->getId() !== $partner->getId()) {
+            return $this->json(['error' => 'You can only create reservations for your own trips.'], 403);
+        }
+
+        $reservation = new Reservation();
+        $reservation->setCustomer($customer);
+        $reservation->setTrip($trip);
+        $reservation->setStatus(\App\Enum\ReservationStatus::CONFIRMED);
+
+        $entityManager->persist($reservation);
+        $entityManager->flush();
+
+        return $this->json([
+            'id' => $reservation->getId(),
+            'customer' => '/api/customers/' . $customer->getId(),
+            'trip' => '/api/trips/' . $trip->getId(),
+            'seatNumber' => $reservation->getSeatNumber(),
+            'status' => $reservation->getStatus()->value,
+        ], 201);
+    }
+}
