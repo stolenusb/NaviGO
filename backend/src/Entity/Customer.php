@@ -22,6 +22,7 @@ class Customer extends User
         
         $this->setRoles(['ROLE_CUSTOMER']);
         $this->reservation = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
     }
 
     #[Groups(['user:read', 'user:write'])]
@@ -41,6 +42,12 @@ class Customer extends User
      */
     #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'customer', orphanRemoval: true)]
     private Collection $reservation;
+
+    /**
+     * @var Collection<int, Review>
+     */
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'customer', orphanRemoval: true)]
+    private Collection $reviews;
 
     public function getFirstName(): ?string
     {
@@ -90,6 +97,36 @@ class Customer extends User
             // set the owning side to null (unless already changed)
             if ($reservation->getCustomer() === $this) {
                 $reservation->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): static
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReview(Review $review): static
+    {
+        if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
+            if ($review->getCustomer() === $this) {
+                $review->setCustomer(null);
             }
         }
 
