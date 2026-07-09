@@ -12,6 +12,7 @@ use App\Entity\Reservation;
 use App\Entity\Route;
 use App\Entity\Trip;
 use App\Entity\Vehicle;
+use App\Entity\Review;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -40,8 +41,8 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        // Only apply to Vehicle, Trip, Route, and Reservation entities
-        if (!in_array($resourceClass, [Vehicle::class, Trip::class, Route::class, Reservation::class], true)) {
+        // Only apply to Vehicle, Trip, Route, Reservation, and Review entities
+        if (!in_array($resourceClass, [Vehicle::class, Trip::class, Route::class, Reservation::class, Review::class], true)) {
             return;
         }
 
@@ -92,6 +93,20 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
 
             if ($user instanceof Partner) {
                 // Partner sees reservations for their trips only (join through Trip)
+                $queryBuilder->andWhere(sprintf('%s.trip IN (SELECT t.id FROM App\\Entity\\Trip t WHERE t.partner = :current_partner)', $rootAlias))
+                    ->setParameter('current_partner', $user);
+            }
+        }
+
+        if ($resourceClass === Review::class) {
+            if ($user instanceof Customer) {
+                // Customer sees only their own reviews
+                $queryBuilder->andWhere(sprintf('%s.customer = :current_customer', $rootAlias))
+                    ->setParameter('current_customer', $user);
+            }
+
+            if ($user instanceof Partner) {
+                // Partner sees reviews for their trips only (join through Trip)
                 $queryBuilder->andWhere(sprintf('%s.trip IN (SELECT t.id FROM App\\Entity\\Trip t WHERE t.partner = :current_partner)', $rootAlias))
                     ->setParameter('current_partner', $user);
             }
