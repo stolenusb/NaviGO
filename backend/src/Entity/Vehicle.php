@@ -31,7 +31,7 @@ use ApiPlatform\Metadata\Delete;
             security: 'is_granted("ROLE_PARTNER")',
         ),
         new Delete(
-            security: 'is_granted("ROLE_PARTNER")',
+            security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
     ]
 )]

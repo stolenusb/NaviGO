@@ -36,7 +36,7 @@ use ApiPlatform\Metadata\Delete;
             denormalizationContext: ['groups' => ['trip:write']]
         ),
         new Delete(
-            security: 'is_granted("ROLE_PARTNER")'
+            security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")'
         ),
     ]
 )]

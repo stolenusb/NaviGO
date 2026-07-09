@@ -19,16 +19,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(
-            security: 'is_granted("PUBLIC_ACCESS")',
+            security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
         new Get(
-            security: 'is_granted("PUBLIC_ACCESS")',
+            security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
         new Post(
             security: 'is_granted("ROLE_CUSTOMER")',
         ),
         new Patch(
-            security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
+            security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
         new Delete(
             security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',

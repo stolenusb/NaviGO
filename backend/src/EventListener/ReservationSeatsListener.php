@@ -4,6 +4,8 @@ namespace App\EventListener;
 
 use App\Entity\Reservation;
 use App\Enum\ReservationStatus;
+use App\Enum\TripStatus;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
@@ -20,6 +22,18 @@ class ReservationSeatsListener
         $trip = $reservation->getTrip();
         if ($trip === null) {
             return;
+        }
+
+        switch($trip->getStatus()) {
+            case TripStatus::CANCELED:
+                throw new BadRequestHttpException('Cannot book a reservation, this trip is cancelled.');
+                break;
+            case TripStatus::IN_PROGRESS:
+                throw new BadRequestHttpException('Cannot book a reservation, this trip is in progress.');
+                break;
+            case TripStatus::COMPLETED:
+                throw new BadRequestHttpException('Cannot book a reservation, this trip was completed.');
+                break;
         }
 
         // 1. GATHER OCCUPIED SEATS (Gap-filling algorithm)
@@ -41,7 +55,7 @@ class ReservationSeatsListener
         $vehicle = $trip->getVehicle();
         if ($vehicle && method_exists($vehicle, 'getCapacity')) {
             if ($assignedSeat > $vehicle->getCapacity()) {
-                throw new \RuntimeException('This vehicle layout is fully occupied. Cannot assign seat number.');
+                throw new BadRequestHttpException('This vehicle layout is fully occupied. Cannot assign seat number.');
             }
         }
 
@@ -121,7 +135,7 @@ class ReservationSeatsListener
         $currentSeats = $trip->getAvailableSeats();
 
         if ($currentSeats === null || $currentSeats <= 0) {
-            throw new \RuntimeException(
+            throw new BadRequestHttpException(
                 sprintf('No available seats left for trip #%d.', $trip->getId())
             );
         }
