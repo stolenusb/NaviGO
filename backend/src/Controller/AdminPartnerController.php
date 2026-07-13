@@ -4,21 +4,23 @@ namespace App\Controller;
 
 use App\Entity\Partner;
 use App\Enum\PartnerStatus;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[AsController]
 class AdminPartnerController extends AbstractController
 {
-    #[Route(
-        path: '/api/partners/{id}/approve',
-        name: 'api_partner_approve',
-        methods: ['PATCH'],
-    )]
+    public function __construct(
+        private readonly NotificationService $notificationService,
+    ) {}
+
+    /**
+     * Approve a pending partner registration.
+     */
     #[IsGranted('ROLE_ADMIN')]
     public function approve(
         Partner $partner,
@@ -32,18 +34,18 @@ class AdminPartnerController extends AbstractController
 
         $partner->setStatus(PartnerStatus::APPROVED);
         $entityManager->flush();
-
+        $this->notificationService->createNotification(
+            "Your partnership has been approved!", $partner
+        );
         return $this->json([
             'message' => sprintf('Partner "%s" has been approved.', $partner->getCompanyName()),
             'status' => PartnerStatus::APPROVED->value,
         ]);
     }
 
-    #[Route(
-        path: '/api/partners/{id}/reject',
-        name: 'api_partner_reject',
-        methods: ['PATCH'],
-    )]
+    /**
+     * Reject a pending partner registration.
+     */
     #[IsGranted('ROLE_ADMIN')]
     public function reject(
         Partner $partner,
@@ -57,7 +59,9 @@ class AdminPartnerController extends AbstractController
 
         $partner->setStatus(PartnerStatus::REJECTED);
         $entityManager->flush();
-
+        $this->notificationService->createNotification(
+            "Your partnership has been declined!", $partner
+        );
         return $this->json([
             'message' => sprintf('Partner "%s" has been rejected.', $partner->getCompanyName()),
             'status' => PartnerStatus::REJECTED->value,

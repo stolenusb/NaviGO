@@ -16,6 +16,10 @@ use Doctrine\ORM\Event\PreRemoveEventArgs;
  */
 class ReservationSeatsListener
 {
+    public function __construct(
+        private readonly NotificationService $notificationService,
+    ) {}
+    
     public function preUpdate(PreUpdateEventArgs $args): void
     {
         $reservation = $args->getObject();
@@ -30,7 +34,7 @@ class ReservationSeatsListener
             // When a reservation is cancelled, free its seat number
             if ($oldStatus === ReservationStatus::CONFIRMED && $newStatus === ReservationStatus::CANCELLED) {
                 $reservation->setSeatNumber(null);
-                
+                $this->notificationService->createNotification("Your reservation #" . $reservation->getId() . " was cancelled.", $reservation->getCustomer());
             }
         }
     }

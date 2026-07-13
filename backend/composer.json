@@ -84,6 +84,7 @@
         }
     },
     "require-dev": {
-        "symfony/maker-bundle": "*"
+        "symfony/maker-bundle": "*",
+        "zircote/swagger-php": "^6.4"
     }
 }

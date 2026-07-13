@@ -19,12 +19,13 @@ class ReservationService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ReservationRepository $reservationRepository,
+        private readonly NotificationService $notificationService,
     ) {}
 
     public function createReservation(Trip $trip, Customer $customer): Reservation
     {
         // Wrap everything in a transaction with a pessimistic lock
-        return $this->entityManager->wrapInTransaction(function () use ($trip, $customer) {
+        $reservation = $this->entityManager->wrapInTransaction(function () use ($trip, $customer) {
             // 1. Re-fetch the Trip with a pessimistic write lock
             $lockedTrip = $this->entityManager
                 ->createQueryBuilder()
@@ -71,11 +72,15 @@ class ReservationService
             $reservation->setTrip($lockedTrip);
             $reservation->setSeatNumber($assignedSeat);
             $reservation->setStatus(ReservationStatus::CONFIRMED);
-
+            
             $this->entityManager->persist($reservation);
 
             return $reservation;
         });
+
+        $this->notificationService->createNotification("Your reservation #" . $reservation->getId() . " for trip #" . $trip->getId() . " is confirmed.", $reservation->getCustomer());
+
+        return $reservation;
     }
 
     private function validateTripStatus(Trip $trip): void

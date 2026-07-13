@@ -30,7 +30,12 @@ security:
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-        # 2. Protected API Endpoints
+        # 2. NEW BYPASS: Allows Swagger/Nelmio UI to load without checking for JWT
+        api_doc:
+            pattern: ^/api/(doc|docs)(/|$)|^/api$
+            security: false
+
+        # 3. Protected API Endpoints
         api:
             pattern: ^/api
             stateless: true
@@ -38,6 +43,9 @@ security:
 
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        # Explicitly allow doc routes in case Symfony falls back here
+        - { path: ^/api/(doc|docs), roles: PUBLIC_ACCESS }
+        - { path: ^/api$, roles: PUBLIC_ACCESS }
         # Open up POST requests for registration so new users can sign up
         - { path: ^/api/customers, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/partners, roles: PUBLIC_ACCESS, methods: [POST] }

@@ -7,7 +7,6 @@ use App\Service\TripService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[AsController]
@@ -17,11 +16,9 @@ class TripStatusController extends AbstractController
         private readonly TripService $tripService,
     ) {}
 
-    #[Route(
-        path: '/api/trips/{id}/start',
-        name: 'api_trip_start',
-        methods: ['PATCH'],
-    )]
+    /**
+     * Start a trip — changes status from SCHEDULED to IN_PROGRESS.
+     */
     #[IsGranted('ROLE_PARTNER')]
     public function start(Trip $trip): JsonResponse
     {
@@ -33,11 +30,9 @@ class TripStatusController extends AbstractController
         ]);
     }
 
-    #[Route(
-        path: '/api/trips/{id}/complete',
-        name: 'api_trip_complete',
-        methods: ['PATCH'],
-    )]
+    /**
+     * Complete a trip — changes status from IN_PROGRESS to COMPLETED.
+     */
     #[IsGranted('ROLE_PARTNER')]
     public function complete(Trip $trip): JsonResponse
     {
@@ -49,11 +44,9 @@ class TripStatusController extends AbstractController
         ]);
     }
 
-    #[Route(
-        path: '/api/trips/{id}/cancel',
-        name: 'api_trip_cancel',
-        methods: ['PATCH'],
-    )]
+    /**
+     * Cancel a trip — changes status to CANCELED and cancels all confirmed reservations.
+     */
     #[IsGranted('ROLE_PARTNER')]
     public function cancel(Trip $trip): JsonResponse
     {

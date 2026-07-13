@@ -16,6 +16,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
+use App\Controller\TripStatusController;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
 #[ApiResource(
@@ -39,7 +42,52 @@ use ApiPlatform\Metadata\Delete;
         new Delete(
             security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")'
         ),
-    ]
+        
+        // Custom Trip Status update operations
+        new Patch(
+            name: 'api_trip_start',
+            uriTemplate: '/trips/{id}/start',
+            controller: TripStatusController::class . '::start',
+            security: 'is_granted("ROLE_PARTNER")',
+            validate: false,
+            openapi: new Operation(
+                summary: 'Start a trip',
+                description: 'Changes trip status from SCHEDULED to IN_PROGRESS.',
+                responses: [
+                    '200' => new Response(description: 'Trip started successfully')
+                ]
+            )
+        ),
+        new Patch(
+            name: 'api_trip_complete',
+            uriTemplate: '/trips/{id}/complete',
+            controller: TripStatusController::class . '::complete',
+            security: 'is_granted("ROLE_PARTNER")',
+            validate: false,
+            openapi: new Operation(
+                summary: 'Complete a trip',
+                description: 'Changes trip status from IN_PROGRESS to COMPLETED.',
+                responses: [
+                    '200' => new Response(description: 'Trip completed successfully')
+                ]
+            )
+        ),
+        new Patch(
+            name: 'api_trip_cancel',
+            uriTemplate: '/trips/{id}/cancel',
+            controller: TripStatusController::class . '::cancel',
+            security: 'is_granted("ROLE_PARTNER")',
+            validate: false,
+            openapi: new Operation(
+                summary: 'Cancel a trip',
+                description: 'Changes trip status to CANCELED and cancels all confirmed reservations.',
+                responses: [
+                    '200' => new Response(description: 'Trip cancelled successfully')
+                ]
+            )
+        ),
+    ],
+    description: 'A trip with a specific route, vehicle, departure time, and price. Partners can create, update, and delete their own trips.'
 )]
 class Trip
 {

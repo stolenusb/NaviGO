@@ -11,9 +11,52 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
+use App\Controller\AdminPartnerController;
 
 #[ORM\Entity(repositoryClass: PartnerRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(),
+        new Patch(),
+        new Delete(),
+        new Patch(
+            name: 'api_partner_approve',
+            uriTemplate: '/partners/{id}/approve',
+            controller: AdminPartnerController::class . '::approve',
+            security: 'is_granted("ROLE_ADMIN")',
+            validate: false,
+            openapi: new Operation(
+                summary: 'Approve a partner registration',
+                description: 'Admin approves a pending partner registration.',
+                responses: [
+                    '200' => new Response(description: 'Partner approved successfully')
+                ]
+            )
+        ),
+        new Patch(
+            name: 'api_partner_reject',
+            uriTemplate: '/partners/{id}/reject',
+            controller: AdminPartnerController::class . '::reject',
+            security: 'is_granted("ROLE_ADMIN")',
+            validate: false,
+            openapi: new Operation(
+                summary: 'Reject a partner registration',
+                description: 'Admin rejects a pending partner registration.',
+                responses: [
+                    '200' => new Response(description: 'Partner rejected successfully')
+                ]
+            )
+        ),
+    ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']]
 )]

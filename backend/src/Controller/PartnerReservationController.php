@@ -6,22 +6,24 @@ use App\Entity\Customer;
 use App\Entity\Reservation;
 use App\Entity\Trip;
 use App\Entity\Partner;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[AsController]
 class PartnerReservationController extends AbstractController
 {
-    #[Route(
-        path: '/api/reservations/for-customer',
-        name: 'api_reservation_for_customer',
-        methods: ['POST'],
-    )]
+    public function __construct(
+        private readonly NotificationService $notificationService,
+    ) {}
+
+    /**
+     * Create a reservation for a customer on behalf of a partner.
+     */
     #[IsGranted('ROLE_PARTNER')]
     public function createForCustomer(
         Request $request,
@@ -69,6 +71,7 @@ class PartnerReservationController extends AbstractController
 
         $entityManager->persist($reservation);
         $entityManager->flush();
+        $this->notificationService->createNotification("You were given a reservation #" . $reservation->getId() . " for trip #" . $trip->getId() . " is confirmed.", $reservation->getCustomer());
 
         return $this->json([
             'id' => $reservation->getId(),

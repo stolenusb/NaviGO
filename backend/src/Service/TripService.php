@@ -13,6 +13,7 @@ class TripService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly NotificationService $notificationService,
     ) {}
 
     public function startTrip(Trip $trip): Trip
@@ -20,6 +21,12 @@ class TripService
         $this->entityManager->wrapInTransaction(function () use ($trip) {
             $trip->start();
             $this->entityManager->flush();
+            foreach($trip->getReservations() as $reservation) {
+                if($reservation->getStatus() === ReservationStatus::CONFIRMED)
+                    $this->notificationService->createNotification(
+                        "Trip #" . $trip->getId() . " has started.", $reservation->getCustomer()
+                    );
+            }
         });
 
         return $trip;
@@ -30,6 +37,12 @@ class TripService
         $this->entityManager->wrapInTransaction(function () use ($trip) {
             $trip->complete();
             $this->entityManager->flush();
+            foreach($trip->getReservations() as $reservation) {
+                if($reservation->getStatus() === ReservationStatus::CONFIRMED)
+                    $this->notificationService->createNotification(
+                        "Trip #" . $trip->getId() . " has been completed.", $reservation->getCustomer()
+                    );
+            }
         });
 
         return $trip;
@@ -45,6 +58,9 @@ class TripService
                 if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
                     $reservation->setStatus(ReservationStatus::CANCELLED);
                     $reservation->setSeatNumber(null);
+                    $this->notificationService->createNotification(
+                        "Trip #" . $trip->getId() . " has been cancelled.", $reservation->getCustomer()
+                    );
                 }
             }
 

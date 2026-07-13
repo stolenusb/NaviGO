@@ -9,6 +9,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
+use App\Controller\PartnerReservationController;
 use App\Enum\ReservationStatus;
 use App\Repository\ReservationRepository;
 use App\State\ReservationPersistProcessor;
@@ -41,6 +45,45 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Delete(
             security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
+        new Post(
+            name: 'api_reservation_for_customer',
+            uriTemplate: '/reservations/for-customer',
+            controller: PartnerReservationController::class . '::createForCustomer',
+            security: 'is_granted("ROLE_PARTNER")',
+            deserialize: false,
+            openapi: new Operation(
+                summary: 'Create a reservation for a customer on behalf of a partner',
+                description: 'Allows a partner to book a reservation for a customer on one of their trips.',
+                requestBody: new RequestBody(
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['customerId', 'tripId'],
+                                'properties' => [
+                                    'customerId' => [
+                                        'type' => 'integer',
+                                        'example' => 14,
+                                        'description' => 'ID or IRI of the customer'
+                                    ],
+                                    'tripId' => [
+                                        'type' => 'integer',
+                                        'example' => 10,
+                                        'description' => 'ID or IRI of the trip'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ])
+                ),
+                responses: [
+                    '201' => new Response(description: 'Reservation created'),
+                    '400' => new Response(description: 'Invalid input'),
+                    '403' => new Response(description: 'Unauthorized or not trip owner'),
+                    '404' => new Response(description: 'Customer or trip not found')
+                ]
+            )
+        )
     ]
 )]
 class Reservation
@@ -52,7 +95,7 @@ class Reservation
 
     #[ApiProperty(writable: false)]
     #[Groups(['reservation:read'])]
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $seatNumber = null;
 
     #[Groups(['reservation:read'])]

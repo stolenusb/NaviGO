@@ -8,18 +8,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[AsController]
 class AdminCityController extends AbstractController
 {
-    #[Route(
-        path: '/api/cities/batch',
-        name: 'api_cities_batch',
-        methods: ['POST'],
-    )]
     #[IsGranted('ROLE_ADMIN')]
     public function batchCreate(
         Request $request,
@@ -36,7 +30,7 @@ class AdminCityController extends AbstractController
         $errors = [];
 
         foreach ($data as $index => $item) {
-            // Support both string names and objects with "name" field
+            // Read item directly if it's a string, or lookup the "name" key if sent as an object
             $cityName = is_string($item) ? $item : ($item['name'] ?? null);
 
             if (!$cityName || !is_string($cityName) || trim($cityName) === '') {
@@ -46,7 +40,7 @@ class AdminCityController extends AbstractController
 
             $cityName = trim($cityName);
 
-            // Check for duplicates in the database
+            // Guard against SQL/Duplicate issues using Doctrine repository checks
             $existing = $entityManager->getRepository(City::class)
                 ->findOneBy(['name' => $cityName]);
 
@@ -58,6 +52,7 @@ class AdminCityController extends AbstractController
             $city = new City();
             $city->setName($cityName);
 
+            // Execute the NotBlank & Length validation criteria
             $violations = $validator->validate($city);
             if (count($violations) > 0) {
                 $errors[] = sprintf('"%s": %s', $cityName, $violations[0]->getMessage());
