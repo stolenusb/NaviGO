@@ -2,6 +2,7 @@
 
 namespace App\EventListener;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -14,6 +15,10 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  */
 class KernelExceptionListener
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
     public function onKernelException(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
@@ -30,6 +35,12 @@ class KernelExceptionListener
             $statusCode = 403;
             $message = $exception->getMessage() ?: 'Access Denied.';
         }
+
+        // Log the actual error for debugging
+        $this->logger->error($exception->getMessage(), [
+            'exception' => $exception,
+            'statusCode' => $statusCode,
+        ]);
 
         $event->setResponse(new JsonResponse(
             ['error' => $message],

@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Customer;
+use App\Entity\Notification;
 use App\Entity\Partner;
 use App\Entity\Reservation;
 use App\Entity\Route;
@@ -42,14 +43,14 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
         // Only apply to Vehicle, Trip, Route, Reservation, and Review entities
-        if (!in_array($resourceClass, [Vehicle::class, Trip::class, Route::class, Reservation::class, Review::class], true)) {
+        if (!in_array($resourceClass, [Vehicle::class, Trip::class, Route::class, Reservation::class, Review::class, Notification::class], true)) {
             return;
         }
 
         $user = $this->security->getUser();
 
-        // Admin sees everything — no filter
-        if ($user instanceof Partner && in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+        // Admin sees everything — no filter (except notifications)
+        if ($user instanceof Partner && in_array('ROLE_ADMIN', $user->getRoles(), true) && $resourceClass !== Notification::class) {
             return;
         }
 
@@ -96,6 +97,11 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
                 $queryBuilder->andWhere(sprintf('%s.trip IN (SELECT t.id FROM App\\Entity\\Trip t WHERE t.partner = :current_partner)', $rootAlias))
                     ->setParameter('current_partner', $user);
             }
+        }
+
+        if ($resourceClass === Notification::class) {
+            $queryBuilder->andWhere(sprintf('%s.recipient = :current_recipient', $rootAlias))
+                ->setParameter('current_recipient', $user);
         }
 
         if ($resourceClass === Review::class) {

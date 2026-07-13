@@ -4,6 +4,7 @@ namespace App\EventListener;
 
 use App\Entity\Reservation;
 use App\Enum\ReservationStatus;
+use App\Service\NotificationService;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
 
@@ -29,6 +30,7 @@ class ReservationSeatsListener
             // When a reservation is cancelled, free its seat number
             if ($oldStatus === ReservationStatus::CONFIRMED && $newStatus === ReservationStatus::CANCELLED) {
                 $reservation->setSeatNumber(null);
+                
             }
         }
     }
