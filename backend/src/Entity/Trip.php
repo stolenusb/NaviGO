@@ -21,11 +21,11 @@ use ApiPlatform\Metadata\Delete;
 #[ApiResource(
     operations: [
         new GetCollection(
-            security: 'is_granted("PUBLIC_ACCESS")',
+            security: 'is_granted("PUBLIC_ACCESS") or is_granted("ROLE_CUSTOMER")',
             normalizationContext: ['groups' => ['trip:read']]
         ),
         new Get(
-            security: 'is_granted("PUBLIC_ACCESS")',
+            security: 'is_granted("PUBLIC_ACCESS") or is_granted("ROLE_CUSTOMER")',
             normalizationContext: ['groups' => ['trip:read']]
         ),
         new Post(

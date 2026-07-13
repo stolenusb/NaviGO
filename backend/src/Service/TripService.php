@@ -2,12 +2,9 @@
 
 namespace App\Service;
 
-use App\Entity\Reservation;
 use App\Entity\Trip;
 use App\Enum\ReservationStatus;
-use App\Enum\TripStatus;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Handles trip lifecycle transitions with transaction safety and side effects.
