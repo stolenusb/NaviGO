@@ -15,8 +15,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ReviewRepository::class)]
 #[ApiResource(
-    normalizationContext: ['reviews' => ['review:read']],
-    denormalizationContext: ['reviews' => ['review:write']],
+    description: 'Represents a customer review for a completed trip. Reviews are public to read and only the original customer can create or delete them.',
+    normalizationContext: ['groups' => ['review:read']],
+    denormalizationContext: ['groups' => ['review:write']],
     operations: [
         new GetCollection(
             security: 'is_granted("PUBLIC_ACCESS")',

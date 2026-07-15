@@ -55,7 +55,9 @@ use App\Controller\TripStatusController;
                 summary: 'Start a trip',
                 description: 'Changes trip status from SCHEDULED to IN_PROGRESS.',
                 responses: [
-                    '200' => new Response(description: 'Trip started successfully')
+                    '200' => new Response(description: 'Trip started successfully'),
+                    '401' => new Response(description: 'Unauthorized'),
+                    '403' => new Response(description: 'Not allowed to start this trip'),
                 ]
             )
         ),
@@ -69,7 +71,9 @@ use App\Controller\TripStatusController;
                 summary: 'Complete a trip',
                 description: 'Changes trip status from IN_PROGRESS to COMPLETED.',
                 responses: [
-                    '200' => new Response(description: 'Trip completed successfully')
+                    '200' => new Response(description: 'Trip completed successfully'),
+                    '401' => new Response(description: 'Unauthorized'),
+                    '403' => new Response(description: 'Not allowed to complete this trip'),
                 ]
             )
         ),
@@ -83,7 +87,9 @@ use App\Controller\TripStatusController;
                 summary: 'Cancel a trip',
                 description: 'Changes trip status to CANCELED and cancels all confirmed reservations.',
                 responses: [
-                    '200' => new Response(description: 'Trip cancelled successfully')
+                    '200' => new Response(description: 'Trip cancelled successfully'),
+                    '401' => new Response(description: 'Unauthorized'),
+                    '403' => new Response(description: 'Not allowed to cancel this trip'),
                 ]
             )
         ),

@@ -40,7 +40,10 @@ use App\Controller\AdminPartnerController;
                 summary: 'Approve a partner registration',
                 description: 'Admin approves a pending partner registration.',
                 responses: [
-                    '200' => new Response(description: 'Partner approved successfully')
+                    '200' => new Response(description: 'Partner approved successfully'),
+                    '401' => new Response(description: 'Unauthorized'),
+                    '403' => new Response(description: 'Admin privileges required'),
+                    '404' => new Response(description: 'Partner not found'),
                 ]
             )
         ),
@@ -54,7 +57,10 @@ use App\Controller\AdminPartnerController;
                 summary: 'Reject a partner registration',
                 description: 'Admin rejects a pending partner registration.',
                 responses: [
-                    '200' => new Response(description: 'Partner rejected successfully')
+                    '200' => new Response(description: 'Partner rejected successfully'),
+                    '401' => new Response(description: 'Unauthorized'),
+                    '403' => new Response(description: 'Admin privileges required'),
+                    '404' => new Response(description: 'Partner not found'),
                 ]
             )
         ),
