@@ -12,6 +12,7 @@ use App\State\ReviewProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReviewRepository::class)]
 #[ApiResource(
@@ -41,6 +42,9 @@ class Review
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['review:read', 'review:write'])]
+    #[Assert\NotNull]
+    #[Assert\Range(min: 1, max: 5, notInRangeMessage: 'Rating must be between {{ min }} and {{ max }}.')]
     #[ORM\Column]
     private ?float $rating = null;
     

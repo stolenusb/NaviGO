@@ -89,7 +89,7 @@ class ReservationService
             TripStatus::CANCELED => throw new BadRequestHttpException('Cannot book a reservation, this trip is cancelled.'),
             TripStatus::IN_PROGRESS => throw new BadRequestHttpException('Cannot book a reservation, this trip is in progress.'),
             TripStatus::COMPLETED => throw new BadRequestHttpException('Cannot book a reservation, this trip was completed.'),
-            default => null, // SCHEDULED is fine
+            default => null,
         };
     }
 }
