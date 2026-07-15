@@ -56,7 +56,7 @@ class PartnerReservationController extends AbstractController
         // Ensure the trip belongs to the logged-in partner
         $partner = $this->getUser();
         if (!$partner instanceof Partner) {
-            return $this->json(['error' => 'Unauthorized.'], 403);
+            return $this->json(['error' => 'Unauthorized.'], 401);
         }
 
         $tripPartner = $trip->getPartner();

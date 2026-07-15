@@ -16,6 +16,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RouteRepository::class)]
 #[ApiResource(
+    description: 'Represents a partner-owned route between two cities. Routes are public to browse, but only partners manage their own routes.',
+    normalizationContext: ['groups' => ['route:read']],
+    denormalizationContext: ['groups' => ['route:write']],
     operations: [
         new GetCollection(
             security: 'is_granted("PUBLIC_ACCESS")',
@@ -27,10 +30,10 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: 'is_granted("ROLE_PARTNER")',
         ),
         new Patch(
-            security: 'is_granted("ROLE_PARTNER")',
+            security: 'is_granted("ROLE_PARTNER") and object.getOwner() == user',
         ),
         new Delete(
-            security: 'is_granted("ROLE_PARTNER")',
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getOwner() == user)'
         ),
     ]
 )]

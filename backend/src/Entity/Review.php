@@ -15,6 +15,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ReviewRepository::class)]
 #[ApiResource(
+    normalizationContext: ['reviews' => ['review:read']],
+    denormalizationContext: ['reviews' => ['review:write']],
     operations: [
         new GetCollection(
             security: 'is_granted("PUBLIC_ACCESS")',
@@ -27,7 +29,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             processor: ReviewProcessor::class
         ),
         new Delete(
-            security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_ADMIN")',
+            security: 'is_granted("ROLE_ADMIN") or is_granted("ROLE_CUSTOMER") and object.getCustomer() == user'
         ),
     ]
 )]
@@ -40,7 +42,7 @@ class Review
 
     #[ORM\Column]
     private ?float $rating = null;
-
+    
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 

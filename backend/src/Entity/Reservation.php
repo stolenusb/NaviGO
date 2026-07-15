@@ -28,6 +28,9 @@ use Symfony\Component\Validator\Constraints as Assert;
     options: ['where' => '(status != \'CANCELLED\')'],
 )]
 #[ApiResource(
+    description: 'Represents a customer reservation for a trip. Customers create their own reservations, partners can create reservations for their own trips, and admins can manage all reservations.',
+    normalizationContext: ['groups' => ['reservation:read']],
+    denormalizationContext: ['groups' => ['reservation:write']],
     operations: [
         new GetCollection(
             security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
@@ -43,7 +46,8 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
         new Delete(
-            security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getTrip().getPartner() == user) or (is_granted("ROLE_CUSTOMER") and object.getCustomer() == user)'
+
         ),
         new Post(
             name: 'api_reservation_for_customer',

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Enum\TripStatus;
+use App\Enum\ReservationStatus;
 use App\Repository\TripRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -40,7 +41,7 @@ use App\Controller\TripStatusController;
             denormalizationContext: ['groups' => ['trip:write']]
         ),
         new Delete(
-            security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")'
+            security: 'is_granted("ROLE_ADMIN")'
         ),
         
         // Custom Trip Status update operations
@@ -48,7 +49,7 @@ use App\Controller\TripStatusController;
             name: 'api_trip_start',
             uriTemplate: '/trips/{id}/start',
             controller: TripStatusController::class . '::start',
-            security: 'is_granted("ROLE_PARTNER")',
+            security: 'is_granted("ROLE_PARTNER") and object.getPartner() == user',
             validate: false,
             openapi: new Operation(
                 summary: 'Start a trip',
@@ -62,7 +63,7 @@ use App\Controller\TripStatusController;
             name: 'api_trip_complete',
             uriTemplate: '/trips/{id}/complete',
             controller: TripStatusController::class . '::complete',
-            security: 'is_granted("ROLE_PARTNER")',
+            security: 'is_granted("ROLE_PARTNER") and object.getPartner() == user',
             validate: false,
             openapi: new Operation(
                 summary: 'Complete a trip',
@@ -76,7 +77,7 @@ use App\Controller\TripStatusController;
             name: 'api_trip_cancel',
             uriTemplate: '/trips/{id}/cancel',
             controller: TripStatusController::class . '::cancel',
-            security: 'is_granted("ROLE_PARTNER")',
+            security: 'is_granted("ROLE_PARTNER") and object.getPartner() == user',
             validate: false,
             openapi: new Operation(
                 summary: 'Cancel a trip',
@@ -181,12 +182,18 @@ class Trip
 
     public function getAvailableSeats(): ?int
     {
-        // Compute available seats on-the-fly from vehicle capacity minus confirmed reservations
         if ($this->vehicle === null || $this->vehicle->getSeatCapacity() === null) {
             return null;
         }
 
-        return $this->vehicle->getSeatCapacity();
+        $confirmedReservations = 0;
+        foreach ($this->reservations as $reservation) {
+            if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
+                $confirmedReservations++;
+            }
+        }
+
+        return max(0, $this->vehicle->getSeatCapacity() - $confirmedReservations);
     }
 
     public function getStatus(): TripStatus

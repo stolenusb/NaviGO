@@ -22,12 +22,14 @@ use App\Controller\AdminPartnerController;
 
 #[ORM\Entity(repositoryClass: PartnerRepository::class)]
 #[ApiResource(
+    shortName: 'Partner',
+    description: 'Represents a trip provider partner profile. Registerable publicly, manageable by the partner themselves or an administrator.',
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(),
-        new Patch(),
-        new Delete(),
+        new GetCollection(security: 'is_granted("ROLE_ADMIN")'),
+        new Get(security: 'is_granted("ROLE_ADMIN") or object == user'),
+        new Patch(security: 'is_granted("ROLE_ADMIN") or object == user'),
+        new Delete(security: 'is_granted("ROLE_ADMIN")'),
+        new Post(security: 'is_granted("PUBLIC_ACCESS")'),
         new Patch(
             name: 'api_partner_approve',
             uriTemplate: '/partners/{id}/approve',
@@ -123,7 +125,7 @@ class Partner extends User
     /**
      * @var Collection<int, Vehicle>
      */
-    #[ORM\OneToMany(targetEntity: Vehicle::class, mappedBy: 'Owner', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Vehicle::class, mappedBy: 'owner', orphanRemoval: true)]
     private Collection $vehicles;
 
     /**
@@ -135,7 +137,7 @@ class Partner extends User
     /**
      * @var Collection<int, Trip>
      */
-    #[ORM\OneToMany(targetEntity: Trip::class, mappedBy: 'Partner', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Trip::class, mappedBy: 'partner', orphanRemoval: true)]
     private Collection $trips;
 
     public function __construct()

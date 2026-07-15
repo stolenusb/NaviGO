@@ -17,6 +17,9 @@ use ApiPlatform\Metadata\Delete;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
 #[ApiResource(
+    description: 'Represents a partner-owned vehicle used for scheduled trips. Public users can view vehicles, while partners manage their own fleet.',
+    normalizationContext: ['groups' => ['vehicle:read']],
+    denormalizationContext: ['groups' => ['vehicle:write']],
     operations: [
         new GetCollection(
             security: 'is_granted("PUBLIC_ACCESS")',
@@ -28,10 +31,10 @@ use ApiPlatform\Metadata\Delete;
             security: 'is_granted("ROLE_PARTNER")',
         ),
         new Patch(
-            security: 'is_granted("ROLE_PARTNER")',
+            security: 'is_granted("ROLE_PARTNER") and object.getOwner() == user',
         ),
         new Delete(
-            security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getOwner() == user)'
         ),
     ]
 )]
@@ -70,7 +73,7 @@ class Vehicle
     #[Groups(['vehicle:read'])]
     #[ORM\ManyToOne(inversedBy: 'vehicles')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Partner $Owner = null;
+    private ?Partner $owner = null;
 
     /**
      * @var Collection<int, Trip>
@@ -138,12 +141,12 @@ class Vehicle
 
     public function getOwner(): ?Partner
     {
-        return $this->Owner;
+        return $this->owner;
     }
 
-    public function setOwner(?Partner $Owner): static
+    public function setOwner(?Partner $owner): static
     {
-        $this->Owner = $Owner;
+        $this->owner = $owner;
 
         return $this;
     }

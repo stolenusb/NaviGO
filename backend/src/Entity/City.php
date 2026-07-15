@@ -14,10 +14,13 @@ use ApiPlatform\OpenApi\Model\Response;
 use App\Controller\AdminCityController;
 use App\Repository\CityRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CityRepository::class)]
 #[ApiResource(
+    normalizationContext: ['groups' => ['city:read']],
+    denormalizationContext: ['groups' => ['city:write']],
     operations: [
         new GetCollection(
             security: 'is_granted("PUBLIC_ACCESS")',
@@ -101,11 +104,13 @@ class City
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('city:read')]
     private ?int $id = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 255)]
     #[ORM\Column(length: 255)]
+    #[Groups('city:read', 'city:write')]
     private ?string $name = null;
 
     public function getId(): ?int
