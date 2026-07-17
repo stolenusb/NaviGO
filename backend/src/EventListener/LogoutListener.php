@@ -17,12 +17,12 @@ class LogoutListener
 
         if ($token === null) {
             $response = new JsonResponse(
-                ['message' => 'JWT Token not found!'], 
+                ['message' => 'JWT Token not found!'],
                 JsonResponse::HTTP_UNAUTHORIZED
             );
         } else {
             $response = new JsonResponse(
-                ['message' => 'Successfully logged out'], 
+                ['message' => 'Successfully logged out'],
                 JsonResponse::HTTP_OK
             );
         }
