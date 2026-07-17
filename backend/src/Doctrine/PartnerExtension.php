@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Doctrine;
 
 use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
@@ -10,10 +12,10 @@ use App\Entity\Customer;
 use App\Entity\Notification;
 use App\Entity\Partner;
 use App\Entity\Reservation;
+use App\Entity\Review;
 use App\Entity\Route;
 use App\Entity\Trip;
 use App\Entity\Vehicle;
-use App\Entity\Review;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -28,7 +30,8 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
 {
     public function __construct(
         private readonly Security $security,
-    ) {}
+    ) {
+    }
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
@@ -50,7 +53,7 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
         $user = $this->security->getUser();
 
         // Admin sees everything — no filter (except notifications)
-        if ($user instanceof Partner && in_array('ROLE_ADMIN', $user->getRoles(), true) && $resourceClass !== Notification::class) {
+        if ($user instanceof Partner && in_array('ROLE_ADMIN', $user->getRoles(), true) && Notification::class !== $resourceClass) {
             return;
         }
 
@@ -61,7 +64,7 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
 
-        if ($resourceClass === Vehicle::class) {
+        if (Vehicle::class === $resourceClass) {
             // Filter vehicles where Owner matches the logged-in Partner
             if ($user instanceof Partner) {
                 $queryBuilder->andWhere(sprintf('%s.Owner = :current_partner', $rootAlias))
@@ -69,7 +72,7 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
             }
         }
 
-        if ($resourceClass === Route::class) {
+        if (Route::class === $resourceClass) {
             // Filter routes where owner matches the logged-in Partner
             if ($user instanceof Partner) {
                 $queryBuilder->andWhere(sprintf('%s.owner = :current_partner', $rootAlias))
@@ -77,7 +80,7 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
             }
         }
 
-        if ($resourceClass === Trip::class) {
+        if (Trip::class === $resourceClass) {
             // Filter trips where partner matches the logged-in Partner
             if ($user instanceof Partner) {
                 $queryBuilder->andWhere(sprintf('%s.partner = :current_partner', $rootAlias))
@@ -85,7 +88,7 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
             }
         }
 
-        if ($resourceClass === Reservation::class) {
+        if (Reservation::class === $resourceClass) {
             if ($user instanceof Customer) {
                 // Customer sees only their own reservations
                 $queryBuilder->andWhere(sprintf('%s.customer = :current_customer', $rootAlias))
@@ -99,12 +102,12 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
             }
         }
 
-        if ($resourceClass === Notification::class) {
+        if (Notification::class === $resourceClass) {
             $queryBuilder->andWhere(sprintf('%s.recipient = :current_recipient', $rootAlias))
                 ->setParameter('current_recipient', $user);
         }
 
-        if ($resourceClass === Review::class) {
+        if (Review::class === $resourceClass) {
             if ($user instanceof Customer) {
                 // Customer sees only their own reviews
                 $queryBuilder->andWhere(sprintf('%s.customer = :current_customer', $rootAlias))

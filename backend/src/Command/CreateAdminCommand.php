@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
 use App\Entity\Administrator;
@@ -51,6 +53,7 @@ class CreateAdminCommand extends Command
 
         if ($existing) {
             $io->error(sprintf('An admin with email "%s" already exists.', $email));
+
             return Command::FAILURE;
         }
 

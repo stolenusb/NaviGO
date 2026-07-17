@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
@@ -47,7 +49,7 @@ class Review
     #[Assert\Range(min: 1, max: 5, notInRangeMessage: 'Rating must be between {{ min }} and {{ max }}.')]
     #[ORM\Column]
     private ?float $rating = null;
-    
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 

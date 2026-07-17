@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
@@ -37,17 +39,17 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Delete(
             security: 'is_granted("ROLE_ADMIN")',
         ),
-        
+
         // Custom Batch Creation Operation (Fully updated for API Platform v3)
         new Post(
             name: 'api_cities_batch',
             uriTemplate: '/cities/batch',
-            controller: AdminCityController::class . '::batchCreate',
+            controller: AdminCityController::class.'::batchCreate',
             security: 'is_granted("ROLE_ADMIN")',
             deserialize: false,
-            validate: false,    
-            write: false,       
-            serialize: false,   
+            validate: false,
+            write: false,
+            serialize: false,
             openapi: new Operation(
                 summary: 'Batch create cities',
                 description: 'Admin creates multiple cities at once. Accepts a simple array of city name strings.',
@@ -58,10 +60,10 @@ use Symfony\Component\Validator\Constraints as Assert;
                                 'type' => 'array',
                                 'items' => [
                                     'type' => 'string',
-                                    'example' => 'Casablanca'
-                                ]
-                            ]
-                        ]
+                                    'example' => 'Casablanca',
+                                ],
+                            ],
+                        ],
                     ])
                 ),
                 responses: [
@@ -78,25 +80,25 @@ use Symfony\Component\Validator\Constraints as Assert;
                                                 'type' => 'object',
                                                 'properties' => [
                                                     'name' => ['type' => 'string'],
-                                                    '@id' => ['type' => 'string']
-                                                ]
-                                            ]
+                                                    '@id' => ['type' => 'string'],
+                                                ],
+                                            ],
                                         ],
                                         'errors' => [
                                             'type' => 'array',
-                                            'items' => ['type' => 'string']
-                                        ]
-                                    ]
-                                ]
-                            ]
+                                            'items' => ['type' => 'string'],
+                                        ],
+                                    ],
+                                ],
+                            ],
                         ])
                     ),
                     '400' => new Response(
                         description: 'Invalid or empty JSON body context.'
-                    )
+                    ),
                 ]
             )
-        )
+        ),
     ]
 )]
 class City
@@ -104,13 +106,13 @@ class City
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('city:read')]
+    #[Groups(['city:read'])]
     private ?int $id = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 255)]
     #[ORM\Column(length: 255)]
-    #[Groups('city:read', 'city:write')]
+    #[Groups(['city:read', 'city:write'])]
     private ?string $name = null;
 
     public function getId(): ?int

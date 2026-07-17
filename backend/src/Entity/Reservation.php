@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
@@ -47,12 +49,11 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getTrip().getPartner() == user) or (is_granted("ROLE_CUSTOMER") and object.getCustomer() == user)'
-
         ),
         new Post(
             name: 'api_reservation_for_customer',
             uriTemplate: '/reservations/for-customer',
-            controller: PartnerReservationController::class . '::createForCustomer',
+            controller: PartnerReservationController::class.'::createForCustomer',
             security: 'is_granted("ROLE_PARTNER")',
             deserialize: false,
             openapi: new Operation(
@@ -68,26 +69,26 @@ use Symfony\Component\Validator\Constraints as Assert;
                                     'customerId' => [
                                         'type' => 'integer',
                                         'example' => 14,
-                                        'description' => 'ID or IRI of the customer'
+                                        'description' => 'ID or IRI of the customer',
                                     ],
                                     'tripId' => [
                                         'type' => 'integer',
                                         'example' => 10,
-                                        'description' => 'ID or IRI of the trip'
-                                    ]
-                                ]
-                            ]
-                        ]
+                                        'description' => 'ID or IRI of the trip',
+                                    ],
+                                ],
+                            ],
+                        ],
                     ])
                 ),
                 responses: [
                     '201' => new Response(description: 'Reservation created'),
                     '400' => new Response(description: 'Invalid input'),
                     '403' => new Response(description: 'Unauthorized or not trip owner'),
-                    '404' => new Response(description: 'Customer or trip not found')
+                    '404' => new Response(description: 'Customer or trip not found'),
                 ]
             )
-        )
+        ),
     ]
 )]
 class Reservation

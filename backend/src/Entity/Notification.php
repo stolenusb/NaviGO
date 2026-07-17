@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use App\Repository\NotificationRepository;
 use Doctrine\DBAL\Types\Types;
@@ -18,13 +20,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
     denormalizationContext: ['groups' => ['notification:write']],
     operations: [
         new GetCollection(
-                security: 'is_granted("ROLE_ADMIN") or is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER")'
+            security: 'is_granted("ROLE_ADMIN") or is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER")'
         ),
         new Get(
-                security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_CUSTOMER") and object.getRecipient() == user) or (is_granted("ROLE_PARTNER") and object.getRecipient() == user)'
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_CUSTOMER") and object.getRecipient() == user) or (is_granted("ROLE_PARTNER") and object.getRecipient() == user)'
         ),
         new Patch(
-                security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_CUSTOMER") and object.getRecipient() == user) or (is_granted("ROLE_PARTNER") and object.getRecipient() == user)'
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_CUSTOMER") and object.getRecipient() == user) or (is_granted("ROLE_PARTNER") and object.getRecipient() == user)'
         ),
     ]
 )]
@@ -48,7 +50,7 @@ class Notification
     #[ORM\ManyToOne(inversedBy: 'notifications')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $recipient = null;
-    
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -74,12 +76,12 @@ class Notification
         return $this;
     }
 
-    public function getIsRead() : bool
+    public function getIsRead(): bool
     {
         return $this->isRead;
     }
 
-    public function setIsRead(bool $read) : static
+    public function setIsRead(bool $read): static
     {
         $this->isRead = $read;
 

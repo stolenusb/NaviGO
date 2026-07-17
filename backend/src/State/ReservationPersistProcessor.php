@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\State;
 
 use ApiPlatform\Metadata\Operation;
@@ -17,7 +19,8 @@ class ReservationPersistProcessor implements ProcessorInterface
     public function __construct(
         private readonly ReservationService $reservationService,
         private readonly Security $security,
-    ) {}
+    ) {
+    }
 
     /**
      * @param Reservation $data

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Entity\Customer;
@@ -20,7 +22,8 @@ class ReservationService
         private readonly EntityManagerInterface $entityManager,
         private readonly ReservationRepository $reservationRepository,
         private readonly NotificationService $notificationService,
-    ) {}
+    ) {
+    }
 
     public function createReservation(Trip $trip, Customer $customer): Reservation
     {
@@ -49,18 +52,18 @@ class ReservationService
 
             // 4. Compute the lowest available seat number (gap-filling)
             $occupiedSeats = array_map(
-                fn(Reservation $r) => $r->getSeatNumber(),
-                array_filter($existingReservations, fn(Reservation $r) => $r->getSeatNumber() !== null)
+                fn (Reservation $r) => $r->getSeatNumber(),
+                array_filter($existingReservations, fn (Reservation $r) => null !== $r->getSeatNumber())
             );
 
             $assignedSeat = 1;
             while (in_array($assignedSeat, $occupiedSeats, true)) {
-                $assignedSeat++;
+                ++$assignedSeat;
             }
 
             // 5. Check vehicle capacity
             $vehicle = $lockedTrip->getVehicle();
-            if ($vehicle && $vehicle->getSeatCapacity() !== null) {
+            if ($vehicle && null !== $vehicle->getSeatCapacity()) {
                 if ($assignedSeat > $vehicle->getSeatCapacity()) {
                     throw new BadRequestHttpException('This vehicle is fully occupied. No seats available.');
                 }
@@ -72,13 +75,13 @@ class ReservationService
             $reservation->setTrip($lockedTrip);
             $reservation->setSeatNumber($assignedSeat);
             $reservation->setStatus(ReservationStatus::CONFIRMED);
-            
+
             $this->entityManager->persist($reservation);
 
             return $reservation;
         });
 
-        $this->notificationService->createNotification("Your reservation #" . $reservation->getId() . " for trip #" . $trip->getId() . " is confirmed.", $reservation->getCustomer());
+        $this->notificationService->createNotification('Your reservation #'.$reservation->getId().' for trip #'.$trip->getId().' is confirmed.', $reservation->getCustomer());
 
         return $reservation;
     }

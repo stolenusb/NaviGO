@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\User;
@@ -12,8 +14,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class UserPasswordHasherListener
 {
     public function __construct(
-        private UserPasswordHasherInterface $passwordHasher
-    ) {}
+        private UserPasswordHasherInterface $passwordHasher,
+    ) {
+    }
 
     public function prePersist(User $user): void
     {

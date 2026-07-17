@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\Partner;
@@ -15,10 +17,8 @@ class JWTMissingPartnerCheckListener
     {
         $user = $event->getUser();
 
-        if ($user instanceof Partner && $user->getStatus() !== PartnerStatus::APPROVED) {
-            throw new CustomUserMessageAuthenticationException(
-                sprintf('Your partner registration status is currently %s. Access denied until approved.', strtoupper($user->getStatus()->value))
-            );
+        if ($user instanceof Partner && PartnerStatus::APPROVED !== $user->getStatus()) {
+            throw new CustomUserMessageAuthenticationException(sprintf('Your partner registration status is currently %s. Access denied until approved.', strtoupper($user->getStatus()->value)));
         }
     }
 }

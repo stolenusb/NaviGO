@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Trip;
@@ -14,7 +16,8 @@ class TripStatusController extends AbstractController
 {
     public function __construct(
         private readonly TripService $tripService,
-    ) {}
+    ) {
+    }
 
     /**
      * Start a trip — changes status from SCHEDULED to IN_PROGRESS.
