@@ -22,7 +22,7 @@ class NotificationServiceTest extends TestCase
             ->method('flush');
 
         $service = new NotificationService($entityManager);
-        $recipient = $this->createMock(User::class);
+        $recipient = $this->createStub(User::class);
 
         $notification = $service->createNotification('Hello', $recipient);
 

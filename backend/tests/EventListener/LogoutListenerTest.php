@@ -16,7 +16,7 @@ class LogoutListenerTest extends TestCase
     {
         $listener = new LogoutListener();
         $event = $this->createMock(LogoutEvent::class);
-        $token = $this->createMock(TokenInterface::class);
+        $token = $this->createStub(TokenInterface::class);
 
         $event->expects($this->once())
             ->method('getToken')

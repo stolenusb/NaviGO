@@ -89,8 +89,9 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95.15",
-        "phpstan/phpstan": "^2.2",
-        "phpunit/phpunit": "^11.5.56",
+        "phpstan/phpstan": "^2.2.5",
+        "phpstan/phpstan-doctrine": "^2.0",
+        "phpunit/phpunit": "^13.2.4",
         "symfony/maker-bundle": "*",
         "symfony/phpunit-bridge": "^8.1.1",
         "zircote/swagger-php": "^6.4"

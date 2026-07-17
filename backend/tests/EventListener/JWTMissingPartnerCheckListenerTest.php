@@ -16,21 +16,21 @@ class JWTMissingPartnerCheckListenerTest extends TestCase
     public function testApprovedPartnerIsAllowed(): void
     {
         $listener = new JWTMissingPartnerCheckListener();
-        $event = $this->createMock(AuthenticationSuccessEvent::class);
-        $partner = $this->createMock(Partner::class);
+        $event = $this->createStub(AuthenticationSuccessEvent::class);
+        $partner = $this->createStub(Partner::class);
 
         $partner->method('getStatus')->willReturn(PartnerStatus::APPROVED);
         $event->method('getUser')->willReturn($partner);
 
+        $this->expectNotToPerformAssertions();
         $listener->onAuthenticationSuccess($event);
-        self::assertTrue(true);
     }
 
     public function testNonApprovedPartnerIsRejected(): void
     {
         $listener = new JWTMissingPartnerCheckListener();
-        $event = $this->createMock(AuthenticationSuccessEvent::class);
-        $partner = $this->createMock(Partner::class);
+        $event = $this->createStub(AuthenticationSuccessEvent::class);
+        $partner = $this->createStub(Partner::class);
 
         $partner->method('getStatus')->willReturn(PartnerStatus::PENDING);
         $event->method('getUser')->willReturn($partner);

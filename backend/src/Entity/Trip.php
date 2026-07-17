@@ -117,9 +117,6 @@ class Trip
     private ?float $price = null;
 
     #[Groups(['trip:read'])]
-    private ?int $availableSeats = null;
-
-    #[Groups(['trip:read'])]
     #[ORM\Column(type: 'string', enumType: TripStatus::class)]
     private TripStatus $status = TripStatus::SCHEDULED;
 
@@ -190,7 +187,9 @@ class Trip
 
     public function getAvailableSeats(): ?int
     {
-        if ($this->vehicle === null || $this->vehicle->getSeatCapacity() === null) {
+        $seatCapacity = $this->vehicle?->getSeatCapacity();
+
+        if ($seatCapacity === null) {
             return null;
         }
 
@@ -201,19 +200,12 @@ class Trip
             }
         }
 
-        return max(0, $this->vehicle->getSeatCapacity() - $confirmedReservations);
+        return max(0, $seatCapacity - $confirmedReservations);
     }
 
     public function getStatus(): TripStatus
     {
         return $this->status;
-    }
-
-    private function setStatus(TripStatus $status): static
-    {
-        $this->status = $status;
-
-        return $this;
     }
 
     public function start(): void

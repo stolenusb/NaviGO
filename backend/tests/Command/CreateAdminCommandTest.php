@@ -16,10 +16,7 @@ class CreateAdminCommandTest extends TestCase
 {
     public function testItCreatesAnewAdminWhenEmailDoesNotExist(): void
     {
-        $repository = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['find', 'findAll', 'findBy', 'findOneBy'])
-            ->getMock();
+        $repository = $this->createStub(EntityRepository::class);
         $repository->method('findOneBy')->willReturn(null);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
