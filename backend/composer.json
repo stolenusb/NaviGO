@@ -69,8 +69,8 @@
         },
         "test": "phpunit",
         "analyse": "phpstan analyse --memory-limit=1G",
-        "cs:check": "php-cs-fixer fix --dry-run --diff",
-        "cs:fix": "php-cs-fixer fix",
+        "cs:check": "php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.dist.php",
+        "cs:fix": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
         "post-install-cmd": [
             "@auto-scripts"
         ],

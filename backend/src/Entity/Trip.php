@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Enum\TripStatus;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
+use App\Controller\TripStatusController;
 use App\Enum\ReservationStatus;
+use App\Enum\TripStatus;
 use App\Repository\TripRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\OpenApi\Model\Response;
-use App\Controller\TripStatusController;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
 #[ApiResource(
@@ -50,7 +50,7 @@ use App\Controller\TripStatusController;
         new Patch(
             name: 'api_trip_start',
             uriTemplate: '/trips/{id}/start',
-            controller: TripStatusController::class . '::start',
+            controller: TripStatusController::class.'::start',
             security: 'is_granted("ROLE_PARTNER") and object.getPartner() == user',
             validate: false,
             openapi: new Operation(
@@ -66,7 +66,7 @@ use App\Controller\TripStatusController;
         new Patch(
             name: 'api_trip_complete',
             uriTemplate: '/trips/{id}/complete',
-            controller: TripStatusController::class . '::complete',
+            controller: TripStatusController::class.'::complete',
             security: 'is_granted("ROLE_PARTNER") and object.getPartner() == user',
             validate: false,
             openapi: new Operation(
@@ -82,7 +82,7 @@ use App\Controller\TripStatusController;
         new Patch(
             name: 'api_trip_cancel',
             uriTemplate: '/trips/{id}/cancel',
-            controller: TripStatusController::class . '::cancel',
+            controller: TripStatusController::class.'::cancel',
             security: 'is_granted("ROLE_PARTNER") and object.getPartner() == user',
             validate: false,
             openapi: new Operation(
@@ -189,14 +189,14 @@ class Trip
     {
         $seatCapacity = $this->vehicle?->getSeatCapacity();
 
-        if ($seatCapacity === null) {
+        if (null === $seatCapacity) {
             return null;
         }
 
         $confirmedReservations = 0;
         foreach ($this->reservations as $reservation) {
-            if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
-                $confirmedReservations++;
+            if (ReservationStatus::CONFIRMED === $reservation->getStatus()) {
+                ++$confirmedReservations;
             }
         }
 

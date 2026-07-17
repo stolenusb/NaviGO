@@ -26,7 +26,7 @@ class LogoutListenerTest extends TestCase
             ->with($this->callback(static function (Response $response): bool {
                 $payload = json_decode($response->getContent() ?: '', true);
 
-                return $response->getStatusCode() === Response::HTTP_OK
+                return Response::HTTP_OK === $response->getStatusCode()
                     && ($payload['message'] ?? null) === 'Successfully logged out';
             }));
 
@@ -46,7 +46,7 @@ class LogoutListenerTest extends TestCase
             ->with($this->callback(static function (Response $response): bool {
                 $payload = json_decode($response->getContent() ?: '', true);
 
-                return $response->getStatusCode() === Response::HTTP_UNAUTHORIZED
+                return Response::HTTP_UNAUTHORIZED === $response->getStatusCode()
                     && ($payload['message'] ?? null) === 'JWT Token not found!';
             }));
 

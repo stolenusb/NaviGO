@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
+use App\Controller\AdminPartnerController;
 use App\Enum\PartnerStatus;
 use App\Repository\PartnerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -12,15 +21,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\OpenApi\Model\Response;
-use App\Controller\AdminPartnerController;
 
 #[ORM\Entity(repositoryClass: PartnerRepository::class)]
 #[ApiResource(
@@ -35,7 +35,7 @@ use App\Controller\AdminPartnerController;
         new Patch(
             name: 'api_partner_approve',
             uriTemplate: '/partners/{id}/approve',
-            controller: AdminPartnerController::class . '::approve',
+            controller: AdminPartnerController::class.'::approve',
             security: 'is_granted("ROLE_ADMIN")',
             validate: false,
             openapi: new Operation(
@@ -52,7 +52,7 @@ use App\Controller\AdminPartnerController;
         new Patch(
             name: 'api_partner_reject',
             uriTemplate: '/partners/{id}/reject',
-            controller: AdminPartnerController::class . '::reject',
+            controller: AdminPartnerController::class.'::reject',
             security: 'is_granted("ROLE_ADMIN")',
             validate: false,
             openapi: new Operation(
@@ -156,7 +156,7 @@ class Partner extends User
         $this->routes = new ArrayCollection();
         $this->setRoles(['ROLE_PARTNER']);
         // Ensures new partners automatically default to PENDING status
-        $this->setStatus(\App\Enum\PartnerStatus::PENDING);
+        $this->setStatus(PartnerStatus::PENDING);
         $this->trips = new ArrayCollection();
     }
 
@@ -168,6 +168,7 @@ class Partner extends User
     public function setStatus(PartnerStatus $status): self
     {
         $this->status = $status;
+
         return $this;
     }
 

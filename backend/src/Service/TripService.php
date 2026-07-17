@@ -25,9 +25,9 @@ class TripService
             $trip->start();
             $this->entityManager->flush();
             foreach ($trip->getReservations() as $reservation) {
-                if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
+                if (ReservationStatus::CONFIRMED === $reservation->getStatus()) {
                     $this->notificationService->createNotification(
-                        "Trip #" . $trip->getId() . " has started.",
+                        'Trip #'.$trip->getId().' has started.',
                         $reservation->getCustomer()
                     );
                 }
@@ -43,9 +43,9 @@ class TripService
             $trip->complete();
             $this->entityManager->flush();
             foreach ($trip->getReservations() as $reservation) {
-                if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
+                if (ReservationStatus::CONFIRMED === $reservation->getStatus()) {
                     $this->notificationService->createNotification(
-                        "Trip #" . $trip->getId() . " has been completed.",
+                        'Trip #'.$trip->getId().' has been completed.',
                         $reservation->getCustomer()
                     );
                 }
@@ -62,11 +62,11 @@ class TripService
 
             // Cancel all confirmed reservations for this trip
             foreach ($trip->getReservations() as $reservation) {
-                if ($reservation->getStatus() === ReservationStatus::CONFIRMED) {
+                if (ReservationStatus::CONFIRMED === $reservation->getStatus()) {
                     $reservation->setStatus(ReservationStatus::CANCELLED);
                     $reservation->setSeatNumber(null);
                     $this->notificationService->createNotification(
-                        "Trip #" . $trip->getId() . " has been cancelled.",
+                        'Trip #'.$trip->getId().' has been cancelled.',
                         $reservation->getCustomer()
                     );
                 }

@@ -33,7 +33,7 @@ class ReviewProcessor implements ProcessorInterface
         mixed $data,
         Operation $operation,
         array $uriVariables = [],
-        array $context = []
+        array $context = [],
     ): mixed {
         /** @var Review $review */
         $review = $data;
@@ -41,28 +41,21 @@ class ReviewProcessor implements ProcessorInterface
         $user = $this->security->getUser();
 
         if (!$user instanceof UserInterface) {
-            throw new UnauthorizedHttpException(
-                '',
-                'You must be logged in to review a trip.'
-            );
+            throw new UnauthorizedHttpException('', 'You must be logged in to review a trip.');
         }
 
         if (!$user instanceof Customer) {
-            throw new AccessDeniedHttpException(
-                'Only customers can review trips.'
-            );
+            throw new AccessDeniedHttpException('Only customers can review trips.');
         }
 
         $trip = $review->getTrip();
 
-        if ($trip === null) {
+        if (null === $trip) {
             throw new BadRequestHttpException('Trip is required.');
         }
 
-        if ($trip->getStatus() !== TripStatus::COMPLETED) {
-            throw new BadRequestHttpException(
-                'You can only review trips that have been completed.'
-            );
+        if (TripStatus::COMPLETED !== $trip->getStatus()) {
+            throw new BadRequestHttpException('You can only review trips that have been completed.');
         }
 
         $reservation = $this->entityManager
@@ -73,10 +66,8 @@ class ReviewProcessor implements ProcessorInterface
                 'status' => ReservationStatus::CONFIRMED,
             ]);
 
-        if ($reservation === null) {
-            throw new AccessDeniedHttpException(
-                'You must have a confirmed reservation for this trip to leave a review.'
-            );
+        if (null === $reservation) {
+            throw new AccessDeniedHttpException('You must have a confirmed reservation for this trip to leave a review.');
         }
 
         $existingReview = $this->entityManager
@@ -86,10 +77,8 @@ class ReviewProcessor implements ProcessorInterface
                 'trip' => $trip,
             ]);
 
-        if ($existingReview !== null) {
-            throw new BadRequestHttpException(
-                'You have already reviewed this trip.'
-            );
+        if (null !== $existingReview) {
+            throw new BadRequestHttpException('You have already reviewed this trip.');
         }
 
         // Always set the customer from the authenticated user

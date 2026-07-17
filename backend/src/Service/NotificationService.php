@@ -9,7 +9,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Creates a notification with content and for a recipient
+ * Creates a notification with content and for a recipient.
  */
 class NotificationService
 {

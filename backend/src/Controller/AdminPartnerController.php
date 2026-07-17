@@ -29,7 +29,7 @@ class AdminPartnerController extends AbstractController
         Partner $partner,
         EntityManagerInterface $entityManager,
     ): JsonResponse {
-        if ($partner->getStatus() !== PartnerStatus::PENDING) {
+        if (PartnerStatus::PENDING !== $partner->getStatus()) {
             return $this->json([
                 'error' => sprintf('Partner is already %s.', $partner->getStatus()->value),
             ], 400);
@@ -38,9 +38,10 @@ class AdminPartnerController extends AbstractController
         $partner->setStatus(PartnerStatus::APPROVED);
         $entityManager->flush();
         $this->notificationService->createNotification(
-            "Your partnership has been approved!",
+            'Your partnership has been approved!',
             $partner
         );
+
         return $this->json([
             'message' => sprintf('Partner "%s" has been approved.', $partner->getCompanyName()),
             'status' => PartnerStatus::APPROVED->value,
@@ -55,7 +56,7 @@ class AdminPartnerController extends AbstractController
         Partner $partner,
         EntityManagerInterface $entityManager,
     ): JsonResponse {
-        if ($partner->getStatus() !== PartnerStatus::PENDING) {
+        if (PartnerStatus::PENDING !== $partner->getStatus()) {
             return $this->json([
                 'error' => sprintf('Partner is already %s.', $partner->getStatus()->value),
             ], 400);
@@ -64,9 +65,10 @@ class AdminPartnerController extends AbstractController
         $partner->setStatus(PartnerStatus::REJECTED);
         $entityManager->flush();
         $this->notificationService->createNotification(
-            "Your partnership has been declined!",
+            'Your partnership has been declined!',
             $partner
         );
+
         return $this->json([
             'message' => sprintf('Partner "%s" has been rejected.', $partner->getCompanyName()),
             'status' => PartnerStatus::REJECTED->value,

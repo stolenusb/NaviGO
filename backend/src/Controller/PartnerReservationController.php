@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Customer;
+use App\Entity\Partner;
 use App\Entity\Reservation;
 use App\Entity\Trip;
-use App\Entity\Partner;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -63,7 +63,7 @@ class PartnerReservationController extends AbstractController
         }
 
         $tripPartner = $trip->getPartner();
-        if ($tripPartner === null || $tripPartner->getId() !== $partner->getId()) {
+        if (null === $tripPartner || $tripPartner->getId() !== $partner->getId()) {
             return $this->json(['error' => 'You can only create reservations for your own trips.'], 403);
         }
 
@@ -74,12 +74,12 @@ class PartnerReservationController extends AbstractController
 
         $entityManager->persist($reservation);
         $entityManager->flush();
-        $this->notificationService->createNotification("You were given a reservation #" . $reservation->getId() . " for trip #" . $trip->getId() . " is confirmed.", $reservation->getCustomer());
+        $this->notificationService->createNotification('You were given a reservation #'.$reservation->getId().' for trip #'.$trip->getId().' is confirmed.', $reservation->getCustomer());
 
         return $this->json([
             'id' => $reservation->getId(),
-            'customer' => '/api/customers/' . $customer->getId(),
-            'trip' => '/api/trips/' . $trip->getId(),
+            'customer' => '/api/customers/'.$customer->getId(),
+            'trip' => '/api/trips/'.$trip->getId(),
             'seatNumber' => $reservation->getSeatNumber(),
             'status' => $reservation->getStatus()->value,
         ], 201);

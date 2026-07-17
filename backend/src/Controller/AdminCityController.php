@@ -35,7 +35,7 @@ class AdminCityController extends AbstractController
             // Read item directly if it's a string, or lookup the "name" key if sent as an object
             $cityName = is_string($item) ? $item : ($item['name'] ?? null);
 
-            if (!$cityName || !is_string($cityName) || trim($cityName) === '') {
+            if (!$cityName || !is_string($cityName) || '' === trim($cityName)) {
                 $errors[] = sprintf('Item #%d: Invalid city name.', $index);
                 continue;
             }
@@ -66,7 +66,7 @@ class AdminCityController extends AbstractController
 
             $created[] = [
                 'name' => $city->getName(),
-                '@id' => '/api/cities/' . $city->getId(),
+                '@id' => '/api/cities/'.$city->getId(),
             ];
         }
 

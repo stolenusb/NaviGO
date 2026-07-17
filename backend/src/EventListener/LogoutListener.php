@@ -15,7 +15,7 @@ class LogoutListener
     {
         $token = $event->getToken();
 
-        if ($token === null) {
+        if (null === $token) {
             $response = new JsonResponse(
                 ['message' => 'JWT Token not found!'],
                 JsonResponse::HTTP_UNAUTHORIZED

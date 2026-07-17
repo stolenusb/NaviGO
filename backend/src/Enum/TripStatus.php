@@ -12,8 +12,8 @@ enum TripStatus: string
     case CANCELED = 'canceled';
 
     /**
-    * @return TripStatus[] The statuses this case can transition to
-    */
+     * @return TripStatus[] The statuses this case can transition to
+     */
     public function allowedTransitions(): array
     {
         return match ($this) {

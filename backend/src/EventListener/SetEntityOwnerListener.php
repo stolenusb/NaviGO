@@ -44,15 +44,15 @@ class SetEntityOwnerListener
             return;
         }
 
-        if ($entity instanceof Vehicle && $entity->getOwner() === null) {
+        if ($entity instanceof Vehicle && null === $entity->getOwner()) {
             $entity->setOwner($user);
         }
 
-        if ($entity instanceof Route && $entity->getOwner() === null) {
+        if ($entity instanceof Route && null === $entity->getOwner()) {
             $entity->setOwner($user);
         }
 
-        if ($entity instanceof Trip && $entity->getPartner() === null) {
+        if ($entity instanceof Trip && null === $entity->getPartner()) {
             $entity->setPartner($user);
         }
     }
