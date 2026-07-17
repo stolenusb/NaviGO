@@ -40,9 +40,12 @@ security:
             pattern: ^/api
             stateless: true
             jwt: ~
+            logout:
+                path: /api/logout
 
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }
         # Explicitly allow doc routes in case Symfony falls back here
         - { path: ^/api/(doc|docs), roles: PUBLIC_ACCESS }
         - { path: ^/api$, roles: PUBLIC_ACCESS }
