@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Enum\TripStatus;
@@ -43,7 +45,7 @@ use App\Controller\TripStatusController;
         new Delete(
             security: 'is_granted("ROLE_ADMIN")'
         ),
-        
+
         // Custom Trip Status update operations
         new Patch(
             name: 'api_trip_start',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -14,7 +16,7 @@ class LogoutListener
     {
         $token = $event->getToken();
 
-        if($token == null) {
+        if ($token == null) {
             $response = new JsonResponse(['message' => 'JWT Token not found!'], Response::HTTP_UNAUTHORIZED);
         } else {
             $response = new JsonResponse(['message' => 'Successfully logged out']);

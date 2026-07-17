@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\Reservation;
@@ -18,8 +20,9 @@ class ReservationSeatsListener
 {
     public function __construct(
         private readonly NotificationService $notificationService,
-    ) {}
-    
+    ) {
+    }
+
     public function preUpdate(PreUpdateEventArgs $args): void
     {
         $reservation = $args->getObject();

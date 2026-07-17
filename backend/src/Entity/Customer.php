@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\CustomerRepository;
@@ -31,9 +33,10 @@ use ApiPlatform\Metadata\Get;
 )]
 class Customer extends User
 {
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
-        
+
         $this->setRoles(['ROLE_CUSTOMER']);
         $this->reservation = new ArrayCollection();
         $this->reviews = new ArrayCollection();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\Customer;
@@ -16,24 +18,25 @@ class SetEntityOwnerListener
 {
     public function __construct(
         private readonly Security $security,
-    ) {}
+    ) {
+    }
 
     public function prePersist(LifecycleEventArgs $args): void
     {
         $entity = $args->getObject();
 
         if (!$entity instanceof Vehicle && !$entity instanceof Trip && !$entity instanceof Route && !$entity instanceof Reservation
-            &&!$entity instanceof Review) {
+            && !$entity instanceof Review) {
             return;
         }
 
         $user = $this->security->getUser();
 
-        if($user instanceof Customer && $entity instanceof Reservation) {
+        if ($user instanceof Customer && $entity instanceof Reservation) {
             $entity->setCustomer($user);
         }
 
-        if($user instanceof Customer && $entity instanceof Review) {
+        if ($user instanceof Customer && $entity instanceof Review) {
             $entity->setCustomer($user);
         }
 

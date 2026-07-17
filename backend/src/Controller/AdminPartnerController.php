@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Partner;
@@ -16,7 +18,8 @@ class AdminPartnerController extends AbstractController
 {
     public function __construct(
         private readonly NotificationService $notificationService,
-    ) {}
+    ) {
+    }
 
     /**
      * Approve a pending partner registration.
@@ -35,7 +38,8 @@ class AdminPartnerController extends AbstractController
         $partner->setStatus(PartnerStatus::APPROVED);
         $entityManager->flush();
         $this->notificationService->createNotification(
-            "Your partnership has been approved!", $partner
+            "Your partnership has been approved!",
+            $partner
         );
         return $this->json([
             'message' => sprintf('Partner "%s" has been approved.', $partner->getCompanyName()),
@@ -60,7 +64,8 @@ class AdminPartnerController extends AbstractController
         $partner->setStatus(PartnerStatus::REJECTED);
         $entityManager->flush();
         $this->notificationService->createNotification(
-            "Your partnership has been declined!", $partner
+            "Your partnership has been declined!",
+            $partner
         );
         return $this->json([
             'message' => sprintf('Partner "%s" has been rejected.', $partner->getCompanyName()),

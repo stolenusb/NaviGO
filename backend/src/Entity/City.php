@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
@@ -37,7 +39,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Delete(
             security: 'is_granted("ROLE_ADMIN")',
         ),
-        
+
         // Custom Batch Creation Operation (Fully updated for API Platform v3)
         new Post(
             name: 'api_cities_batch',
@@ -45,9 +47,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             controller: AdminCityController::class . '::batchCreate',
             security: 'is_granted("ROLE_ADMIN")',
             deserialize: false,
-            validate: false,    
-            write: false,       
-            serialize: false,   
+            validate: false,
+            write: false,
+            serialize: false,
             openapi: new Operation(
                 summary: 'Batch create cities',
                 description: 'Admin creates multiple cities at once. Accepts a simple array of city name strings.',

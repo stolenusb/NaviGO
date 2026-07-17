@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
@@ -47,7 +49,6 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getTrip().getPartner() == user) or (is_granted("ROLE_CUSTOMER") and object.getCustomer() == user)'
-
         ),
         new Post(
             name: 'api_reservation_for_customer',

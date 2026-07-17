@@ -67,6 +67,10 @@
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
+        "test": "phpunit",
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix",
         "post-install-cmd": [
             "@auto-scripts"
         ],
@@ -84,7 +88,11 @@
         }
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.95.15",
+        "phpstan/phpstan": "^1.12.33",
+        "phpunit/phpunit": "^11.5.56",
         "symfony/maker-bundle": "*",
+        "symfony/phpunit-bridge": "^8.1.1",
         "zircote/swagger-php": "^6.4"
     }
 }

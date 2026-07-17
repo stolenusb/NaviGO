@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Enum\PartnerStatus;
@@ -149,13 +151,13 @@ class Partner extends User
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->vehicles = new ArrayCollection();
         $this->routes = new ArrayCollection();
         $this->setRoles(['ROLE_PARTNER']);
         // Ensures new partners automatically default to PENDING status
         $this->setStatus(\App\Enum\PartnerStatus::PENDING);
-        $this->trips = new ArrayCollection(); 
+        $this->trips = new ArrayCollection();
     }
 
     public function getStatus(): PartnerStatus

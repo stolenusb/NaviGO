@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Entity\Notification;
@@ -13,9 +15,10 @@ class NotificationService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-    ) {}
+    ) {
+    }
 
-    public function createNotification(string $content, User $recipient) : Notification
+    public function createNotification(string $content, User $recipient): Notification
     {
         $notification = new Notification();
 

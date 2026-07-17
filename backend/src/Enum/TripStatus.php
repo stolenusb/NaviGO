@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enum;
 
 enum TripStatus: string
@@ -9,9 +11,9 @@ enum TripStatus: string
     case COMPLETED = 'completed';
     case CANCELED = 'canceled';
 
-     /**
-     * @return TripStatus[] The statuses this case can transition to
-     */
+    /**
+    * @return TripStatus[] The statuses this case can transition to
+    */
     public function allowedTransitions(): array
     {
         return match ($this) {

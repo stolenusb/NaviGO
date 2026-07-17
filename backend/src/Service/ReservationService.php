@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Entity\Customer;
@@ -20,7 +22,8 @@ class ReservationService
         private readonly EntityManagerInterface $entityManager,
         private readonly ReservationRepository $reservationRepository,
         private readonly NotificationService $notificationService,
-    ) {}
+    ) {
+    }
 
     public function createReservation(Trip $trip, Customer $customer): Reservation
     {
@@ -49,8 +52,8 @@ class ReservationService
 
             // 4. Compute the lowest available seat number (gap-filling)
             $occupiedSeats = array_map(
-                fn(Reservation $r) => $r->getSeatNumber(),
-                array_filter($existingReservations, fn(Reservation $r) => $r->getSeatNumber() !== null)
+                fn (Reservation $r) => $r->getSeatNumber(),
+                array_filter($existingReservations, fn (Reservation $r) => $r->getSeatNumber() !== null)
             );
 
             $assignedSeat = 1;
@@ -72,7 +75,7 @@ class ReservationService
             $reservation->setTrip($lockedTrip);
             $reservation->setSeatNumber($assignedSeat);
             $reservation->setStatus(ReservationStatus::CONFIRMED);
-            
+
             $this->entityManager->persist($reservation);
 
             return $reservation;

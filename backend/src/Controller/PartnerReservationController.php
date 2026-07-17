@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Customer;
@@ -19,7 +21,8 @@ class PartnerReservationController extends AbstractController
 {
     public function __construct(
         private readonly NotificationService $notificationService,
-    ) {}
+    ) {
+    }
 
     /**
      * Create a reservation for a customer on behalf of a partner.
