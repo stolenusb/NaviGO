@@ -9,24 +9,7 @@ export default function LogoutPage() {
   const [message, setMessage] = useState('Logging out...');
 
   useEffect(() => {
-    const logoutCompleted = sessionStorage.getItem('logoutCompleted') === 'true';
     const token = localStorage.getItem('jwt');
-
-    if (logoutCompleted) {
-      setStatus('success');
-      setMessage('Successfully logged out. Redirecting to home...');
-
-      redirectTimerRef.current = window.setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 5000);
-
-      return () => {
-        if (redirectTimerRef.current !== null) {
-          window.clearTimeout(redirectTimerRef.current);
-          redirectTimerRef.current = null;
-        }
-      };
-    }
 
     if (!token) {
       setStatus('error');
@@ -42,14 +25,7 @@ export default function LogoutPage() {
     redirectTimerRef.current = window.setTimeout(() => {
       navigate('/', { replace: true });
     }, 3000);
-
-    return () => {
-      if (redirectTimerRef.current !== null) {
-        window.clearTimeout(redirectTimerRef.current);
-        redirectTimerRef.current = null;
-      }
-    };
-  }, [navigate]);
+  }, []);
 
   return (
     <AuthLayout>
