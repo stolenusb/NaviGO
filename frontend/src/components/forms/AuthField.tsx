@@ -7,11 +7,11 @@ type AuthFieldProps = {
 export default function AuthField({ label, type = 'text', placeholder = 'Value' }: AuthFieldProps) {
   return (
     <label className="block space-y-2 text-left">
-      <span className="block text-sm font-medium text-black">{label}</span>
+      <span className="block text-[0.95rem] font-normal leading-none text-[#222]">{label}</span>
       <input
         type={type}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-black/15 px-4 py-3 text-base outline-none transition focus:border-black/40"
+        className="w-full rounded-[0.55rem] border border-black/10 px-4 py-3 text-[0.95rem] outline-none transition placeholder:text-black/25 focus:border-black/30"
       />
     </label>
   );
