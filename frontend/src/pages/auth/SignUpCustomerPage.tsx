@@ -1,0 +1,74 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthLayout from '../../layouts/AuthLayout';
+import AuthButton from '../../components/ui/AuthButton';
+import AuthField from '../../components/forms/AuthField';
+import { apiClient } from '../../services/api/client';
+
+export default function SignUpCustomerPage() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    firstName: '',
+    lastName: '',
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await apiClient.registerCustomer({
+        ...form,
+        plainPassword: form.password,
+      });
+      navigate('/signup/customer/success');
+    } catch (err) {
+      if (err && typeof err === 'object' && 'message' in err && typeof err.message === 'string') {
+        setError(err.message);
+      } else {
+        setError('Unable to register');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AuthLayout cardClassName="max-w-xl">
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <h1 className="text-3xl text-center font-normal text-black sm:text-[2.5rem]">Customer Registration</h1>
+        <AuthField label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        <AuthField label="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        <AuthField label="Confirm Password" type="password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
+        <AuthField label="Phone" type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+        <AuthField label="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+        <AuthField label="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+        {error ? (
+          <div className="mb-6 whitespace-pre-line rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+        <AuthButton type="submit" disabled={loading}>
+          {loading ? 'Signing Up...' : 'Sign Up'}
+        </AuthButton>
+      </form>
+    </AuthLayout>
+  );
+}
