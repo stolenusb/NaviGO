@@ -94,4 +94,20 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  getTrips: (filters?: {
+    departureCity?: string;
+    arrivalCity?: string;
+    departureTime?: string;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters?.departureCity) params.set('departureCity', filters.departureCity);
+    if (filters?.arrivalCity) params.set('arrivalCity', filters.arrivalCity);
+    if (filters?.departureTime) params.set('departureTime', filters.departureTime);
+
+    const query = params.toString();
+
+    return request(`/trips${query ? `${query}` : ''}`);
+  
+  }
 };

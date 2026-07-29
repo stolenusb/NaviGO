@@ -10,6 +10,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Controller\TripStatusController;
@@ -24,6 +27,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
+#[ApiFilter(SearchFilter::class, properties: [
+    'route.departureCity.name' => 'partial',
+    'route.destinationCity.name' => 'partial',
+])]
+#[ApiFilter(DateFilter::class, properties: [
+    'departureTime',
+])]
 #[ApiResource(
     operations: [
         new GetCollection(
