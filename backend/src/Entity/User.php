@@ -43,10 +43,9 @@ use Symfony\Component\Validator\Constraints as Assert;
                     '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'JWT token missing or invalid'),
                 ]
             )
-        )
+        ),
     ]
 )]
-
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
