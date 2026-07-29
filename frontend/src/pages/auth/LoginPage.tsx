@@ -21,10 +21,19 @@ export default function LoginPage() {
     try {
       const response = await apiClient.login(email, password);
       localStorage.setItem('jwt', response.token);
-      localStorage.setItem('email', email);
+      
+      const currentUser = await apiClient.me();
+      if (currentUser.accountType) localStorage.setItem('accountType', currentUser.accountType);
+      if (currentUser.email) localStorage.setItem('email', currentUser.email);
+      if (currentUser.firstName) localStorage.setItem('firstName', currentUser.firstName);
+      if (currentUser.lastName) localStorage.setItem('lastName', currentUser.lastName);
+      if (currentUser.companyName) localStorage.setItem('companyName', currentUser.companyName);
+      if (currentUser.id) localStorage.setItem('userId', String(currentUser.id));
+
+      window.dispatchEvent(new Event('auth-change'));
       navigate('/login/success', { state: { email }, replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to sign in');
+    } catch {
+      setError('Invalid credentials');
     } finally {
       setLoading(false);
     }

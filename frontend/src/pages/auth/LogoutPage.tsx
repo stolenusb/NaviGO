@@ -17,7 +17,7 @@ export default function LogoutPage() {
       return;
     }
 
-    localStorage.removeItem('jwt');
+    localStorage.clear();
     sessionStorage.setItem('logoutCompleted', 'true');
     setStatus('success');
     setMessage('Successfully logged out. Redirecting to home...');

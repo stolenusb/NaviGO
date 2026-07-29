@@ -56,9 +56,11 @@ body::before {
   z-index: 0;
 }
 
-#root > * {
-  position: relative;
-  z-index: 1;
+@layer base {
+  :where(#root) > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 #root {
@@ -71,4 +73,16 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+@keyframes popoverIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }

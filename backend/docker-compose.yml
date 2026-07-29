@@ -10,8 +10,7 @@ services:
       - "127.0.0.1:443:443/udp"
     volumes:
       - .:/app
-      - /app/var       # <-- CRUCIAL: Isolates cache and logs from Windows filesystem syncing
-      - /app/public/bundles
+      - /app/var
       - caddy_data:/data
       - caddy_config:/config
     environment:
