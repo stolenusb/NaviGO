@@ -51,9 +51,11 @@ function extractErrorMessage(payload: any): string {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const jwt = localStorage.getItem('jwt');
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/ld+json',
+      ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
       ...(options.headers ?? {}),
     },
     ...options,
@@ -76,6 +78,10 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
+
+  me: () => request<{ id?: number; email?: string; roles?: string[]; accountType?: string; firstName?: string; lastName?: string; companyName?: string; phone?: string; createdAt?: string }>('/user', {
+    method: 'GET',
+  }),
 
   registerCustomer: (data: Record<string, unknown>) =>
     request('/customers', {

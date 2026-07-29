@@ -5,13 +5,12 @@ services:
       dockerfile: Dockerfile
     container_name: navigo_backend
     ports:
-      - "8000:80"
-      - "443:443"
-      - "443:443/udp"
+      - "127.0.0.1:8000:80"
+      - "127.0.0.1:443:443"
+      - "127.0.0.1:443:443/udp"
     volumes:
       - .:/app
-      - /app/var       # <-- CRUCIAL: Isolates cache and logs from Windows filesystem syncing
-      - /app/public/bundles
+      - /app/var
       - caddy_data:/data
       - caddy_config:/config
     environment:
@@ -30,7 +29,7 @@ services:
       POSTGRES_USER: symfony
       POSTGRES_PASSWORD: LocalDevPassword123!
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: unless-stopped

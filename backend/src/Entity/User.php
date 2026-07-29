@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use App\Controller\CurrentUserController;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -22,7 +25,27 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\InheritanceType('JOINED')]
 #[ORM\DiscriminatorColumn(name: 'type', type: 'string')]
 #[ORM\DiscriminatorMap(['customer' => Customer::class, 'partner' => Partner::class, 'admin' => Administrator::class])]
-
+#[ApiResource(
+    shortName: 'CurrentUser',
+    description: 'Returns the currently authenticated user profile based on the JWT token. Password is excluded.',
+    operations: [
+        new Get(
+            uriTemplate: '/user',
+            controller: CurrentUserController::class,
+            security: 'is_granted("IS_AUTHENTICATED_FULLY")',
+            read: false,
+            output: false,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                summary: 'Get current authenticated user',
+                description: 'Returns the currently authenticated user profile based on the JWT token. Password is excluded.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(description: 'Current user profile'),
+                    '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'JWT token missing or invalid'),
+                ]
+            )
+        ),
+    ]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]

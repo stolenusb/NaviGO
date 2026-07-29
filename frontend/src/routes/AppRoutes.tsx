@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import CustomerSignupSuccessPage from '../pages/auth/CustomerSignupSuccessPage';
 import LoginSuccessPage from '../pages/auth/LoginSuccessPage';
 import PartnerSignupSuccessPage from '../pages/auth/PartnerSignupSuccessPage';
@@ -9,10 +9,15 @@ import SignUpCustomerPage from '../pages/auth/SignUpCustomerPage';
 import SignUpPage from '../pages/auth/SignUpPage';
 import SignUpPartnerPage from '../pages/auth/SignUpPartnerPage';
 import AuthRouteGuard from '../components/auth/AuthRouteGuard';
+import MainNavbar from '../components/navigation/MainNavbar';
 
-export default function AppRoutes() {
+function AppShell() {
+  const location = useLocation();
+  const isAuthPage = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname === '/logout';
+
   return (
-    <BrowserRouter>
+    <>
+      {!isAuthPage ? <MainNavbar /> : null}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route
@@ -44,10 +49,10 @@ export default function AppRoutes() {
         <Route
           path="/signup/customer/success"
           element={
-              <AuthRouteGuard>
-                <CustomerSignupSuccessPage/>
-              </AuthRouteGuard>
-            }
+            <AuthRouteGuard>
+              <CustomerSignupSuccessPage />
+            </AuthRouteGuard>
+          }
         />
         <Route
           path="/signup/partner"
@@ -61,12 +66,20 @@ export default function AppRoutes() {
           path="/signup/partner/success"
           element={
             <AuthRouteGuard>
-              <PartnerSignupSuccessPage/>
+              <PartnerSignupSuccessPage />
             </AuthRouteGuard>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    </>
+  );
+}
+
+export default function AppRoutes() {
+  return (
+    <BrowserRouter>
+      <AppShell />
     </BrowserRouter>
   );
 }
