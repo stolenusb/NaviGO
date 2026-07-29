@@ -21,6 +21,7 @@ export default function LoginPage() {
     try {
       const response = await apiClient.login(email, password);
       localStorage.setItem('jwt', response.token);
+      localStorage.setItem('email', email);
       navigate('/login/success', { state: { email }, replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to sign in');
