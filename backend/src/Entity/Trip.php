@@ -11,8 +11,8 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\TripCollectionController;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Controller\TripStatusController;
@@ -31,12 +31,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     'route.departureCity.name' => 'partial',
     'route.destinationCity.name' => 'partial',
 ])]
-#[ApiFilter(DateFilter::class, properties: [
-    'departureTime',
-])]
 #[ApiResource(
     operations: [
         new GetCollection(
+            controller: TripCollectionController::class,
             security: 'is_granted("PUBLIC_ACCESS") or is_granted("ROLE_CUSTOMER")',
             normalizationContext: ['groups' => ['trip:read']]
         ),
