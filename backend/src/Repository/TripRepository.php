@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Trip;
+use App\Enum\TripStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -27,7 +28,9 @@ class TripRepository extends ServiceEntityRepository
             ->leftJoin('t.route', 'r')
             ->leftJoin('r.departureCity', 'dc')
             ->leftJoin('r.destinationCity', 'ac')
-            ->addSelect('r', 'dc', 'ac');
+            ->addSelect('r', 'dc', 'ac')
+            ->andWhere('t.status = :status')
+            ->setParameter('status', TripStatus::SCHEDULED);
 
         if ($departureCity) {
             $qb->andWhere('LOWER(dc.name) LIKE :departureCity')
