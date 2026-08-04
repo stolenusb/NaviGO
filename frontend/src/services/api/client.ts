@@ -50,19 +50,26 @@ function extractErrorMessage(payload: any): string {
   return 'Request failed';
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+type RequestOptions = RequestInit & {
+  auth?: boolean;
+};
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const jwt = localStorage.getItem('jwt');
+  const { auth = true, ...fetchOptions } = options;
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/ld+json',
-      ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
-      ...(options.headers ?? {}),
+      ...((jwt && auth) ? { Authorization: `Bearer ${jwt}` } : {}),
+      ...(fetchOptions.headers ?? {}),
     },
-    ...options,
+    ...fetchOptions,
   });
 
   const contentType = response.headers.get('content-type') ?? '';
-  const payload = contentType.includes('application/json') ? await response.json() : null;
+  const payload = contentType.includes('application/json') || contentType.includes('application/ld+json')
+    ? await response.json()
+    : null;
 
   if (!response.ok) {
     const errorMessage = extractErrorMessage(payload);
@@ -94,4 +101,29 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  getTrips: (filters?: {
+    departureCity?: string;
+    arrivalCity?: string;
+    departureTime?: string;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters?.departureCity) params.set('departureCity', filters.departureCity);
+    if (filters?.arrivalCity) params.set('arrivalCity', filters.arrivalCity);
+    if (filters?.departureTime) params.set('departureTime', filters.departureTime);
+
+    const query = params.toString();
+    
+    return request(`/trips${query ? `?${query}` : ''}`, {
+      auth: false,
+    });
+  },
+
+  getCities: () =>
+    request<{ id?: number; name?: string }[] | { 'hydra:member'?: { id?: number; name?: string }[] }>(
+      '/cities',
+      {
+        auth: false,
+      },
+    ),
 };

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -12,6 +14,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
+use App\Controller\TripCollectionController;
 use App\Controller\TripStatusController;
 use App\Enum\ReservationStatus;
 use App\Enum\TripStatus;
@@ -24,9 +27,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
+#[ApiFilter(SearchFilter::class, properties: [
+    'route.departureCity.name' => 'partial',
+    'route.destinationCity.name' => 'partial',
+])]
 #[ApiResource(
     operations: [
         new GetCollection(
+            controller: TripCollectionController::class,
             security: 'is_granted("PUBLIC_ACCESS") or is_granted("ROLE_CUSTOMER")',
             normalizationContext: ['groups' => ['trip:read']]
         ),
