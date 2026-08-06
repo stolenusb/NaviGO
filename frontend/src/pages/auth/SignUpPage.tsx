@@ -1,7 +1,10 @@
 import AuthLayout from '../../layouts/AuthLayout';
 import AuthButton from '../../components/ui/AuthButton';
+import { useNavigate } from 'react-router-dom';
 
 export default function SignUpPage() {
+  const navigate = useNavigate();
+
   return (
     <AuthLayout cardClassName="max-w-5xl">
       <div className="flex flex-col items-center gap-10 text-center lg:gap-14">
@@ -11,14 +14,14 @@ export default function SignUpPage() {
           <AuthButton
             type="button"
             className="w-56 bg-[#d7d82f] text-black hover:bg-[#c8c91e]"
-            onClick={() => (window.location.href = '/signup/customer')}
+            onClick={() => navigate('/signup/customer')}
           >
             Customer
           </AuthButton>
           <AuthButton
             type="button"
             className="w-56 bg-[#9f5200] text-white hover:bg-[#874400]"
-            onClick={() => (window.location.href = '/signup/partner')}
+            onClick={() => navigate('/signup/partner')}
           >
             Partner
           </AuthButton>

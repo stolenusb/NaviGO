@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Partner;
 use App\Entity\Trip;
-use App\Enum\TripStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -22,15 +22,18 @@ class TripRepository extends ServiceEntityRepository
     /**
      * @return Trip[]
      */
-    public function searchByRouteAndDepartureDate(?string $departureCity = null, ?string $arrivalCity = null, ?string $departureDate = null): array
+    public function searchByRouteAndDepartureDate(?string $departureCity = null, ?string $arrivalCity = null, ?string $departureDate = null, ?Partner $partner = null): array
     {
         $qb = $this->createQueryBuilder('t')
             ->leftJoin('t.route', 'r')
             ->leftJoin('r.departureCity', 'dc')
             ->leftJoin('r.destinationCity', 'ac')
-            ->addSelect('r', 'dc', 'ac')
-            ->andWhere('t.status = :status')
-            ->setParameter('status', TripStatus::SCHEDULED);
+            ->addSelect('r', 'dc', 'ac');
+
+        if ($partner) {
+            $qb->andWhere('t.partner = :partner')
+                ->setParameter('partner', $partner);
+        }
 
         if ($departureCity) {
             $qb->andWhere('LOWER(dc.name) LIKE :departureCity')

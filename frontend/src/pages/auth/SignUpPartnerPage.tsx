@@ -4,6 +4,7 @@ import AuthLayout from '../../layouts/AuthLayout';
 import AuthButton from '../../components/ui/AuthButton';
 import AuthField from '../../components/forms/AuthField';
 import { apiClient } from '../../services/api/client';
+import { Spinner } from '#components/ui/spinner';
 
 export default function SignUpPartnerPage() {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ export default function SignUpPartnerPage() {
           </div>
         ) : null}
         <AuthButton type="submit" disabled={loading}>
-          {loading ? 'Signing Up...' : 'Sign Up'}
+          {loading ? <Spinner/> : 'Sign Up'}
         </AuthButton>
       </form>
     </AuthLayout>

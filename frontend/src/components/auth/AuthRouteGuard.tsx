@@ -9,8 +9,8 @@ export default function AuthRouteGuard({ children }: AuthRouteGuardProps) {
   const location = useLocation();
   const token = localStorage.getItem('jwt');
 
-  if (token) {
-    return <Navigate to="/" replace state={{ from: location }} />;
+  if (!token) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   return <>{children}</>;

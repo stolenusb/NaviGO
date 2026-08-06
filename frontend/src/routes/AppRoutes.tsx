@@ -9,66 +9,106 @@ import SignUpCustomerPage from '../pages/auth/SignUpCustomerPage';
 import SignUpPage from '../pages/auth/SignUpPage';
 import SignUpPartnerPage from '../pages/auth/SignUpPartnerPage';
 import AuthRouteGuard from '../components/auth/AuthRouteGuard';
+import RoleRouteGuard from '../components/auth/RoleRouteGuard';
 import MainNavbar from '../components/navigation/MainNavbar';
+import CustomerDashboardPage from '../pages/dashboard/CustomerDashboardPage';
+import PartnerDashboardPage from '../pages/dashboard/PartnerDashboardPage';
+import PartnerHistoryPage from '../pages/dashboard/PartnerHistoryPage';
+import AdminDashboardPage from '../pages/dashboard/AdminDashboardPage';
+import ReservationHistoryPage from '../pages/reservations/ReservationHistoryPage';
+import ProfilePage from '../pages/ProfilePage';
 
 function AppShell() {
   const location = useLocation();
   const isAuthPage = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname === '/logout';
+  const state = location.state as { backgroundLocation?: typeof location } | null;
+  const backgroundLocation = state?.backgroundLocation;
 
   return (
     <>
       {!isAuthPage ? <MainNavbar /> : null}
-      <Routes>
+      <Routes location={backgroundLocation ?? location}>
         <Route path="/" element={<HomePage />} />
-        <Route
-          path="/login"
-          element={
-            <AuthRouteGuard>
-              <LoginPage />
-            </AuthRouteGuard>
-          }
-        />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
         <Route path="/logout" element={<LogoutPage />} />
         <Route
-          path="/signup"
+          path="/profile"
           element={
             <AuthRouteGuard>
-              <SignUpPage />
+              <ProfilePage />
             </AuthRouteGuard>
           }
+        />
+        <Route
+          path="/dashboard/customer"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['customer']}>
+                <CustomerDashboardPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/customer/history"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['customer']}>
+                <ReservationHistoryPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/partner"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['partner']}>
+                <PartnerDashboardPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/partner/history"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['partner']}>
+                <PartnerHistoryPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/admin"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['admin']}>
+                <AdminDashboardPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/signup"
+          element={<SignUpPage />}
         />
         <Route
           path="/signup/customer"
-          element={
-            <AuthRouteGuard>
-              <SignUpCustomerPage />
-            </AuthRouteGuard>
-          }
+          element={<SignUpCustomerPage />}
         />
         <Route
           path="/signup/customer/success"
-          element={
-            <AuthRouteGuard>
-              <CustomerSignupSuccessPage />
-            </AuthRouteGuard>
-          }
+          element={<CustomerSignupSuccessPage />}
         />
         <Route
           path="/signup/partner"
-          element={
-            <AuthRouteGuard>
-              <SignUpPartnerPage />
-            </AuthRouteGuard>
-          }
+          element={<SignUpPartnerPage />}
         />
         <Route
           path="/signup/partner/success"
-          element={
-            <AuthRouteGuard>
-              <PartnerSignupSuccessPage />
-            </AuthRouteGuard>
-          }
+          element={<PartnerSignupSuccessPage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

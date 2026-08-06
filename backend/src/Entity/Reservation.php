@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
@@ -15,12 +13,13 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Controller\PartnerReservationController;
+use App\Controller\ReservationCancelController;
+use App\Controller\ReservationCollectionController;
 use App\Enum\ReservationStatus;
 use App\Repository\ReservationRepository;
 use App\State\ReservationPersistProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 #[ORM\Table(name: 'reservation')]
@@ -30,11 +29,12 @@ use Symfony\Component\Validator\Constraints as Assert;
     options: ['where' => '(status != \'CANCELLED\')'],
 )]
 #[ApiResource(
-    description: 'Represents a customer reservation for a trip. Customers create their own reservations, partners can create reservations for their own trips, and admins can manage all reservations.',
+    description: 'Represents a customer reservation for a trip. Customers create their own reservations, partners can create reservations for their own trips, and admins can manage all reservations. Reservation cancellation is allowed only for the booking customer, the partner that owns the trip, or an administrator.',
     normalizationContext: ['groups' => ['reservation:read']],
     denormalizationContext: ['groups' => ['reservation:write']],
     operations: [
         new GetCollection(
+            controller: ReservationCollectionController::class,
             security: 'is_granted("ROLE_CUSTOMER") or is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
         new Get(
@@ -47,8 +47,21 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Patch(
             security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
         ),
-        new Delete(
-            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getTrip().getPartner() == user) or (is_granted("ROLE_CUSTOMER") and object.getCustomer() == user)'
+        new Post(
+            name: 'api_reservation_cancel',
+            uriTemplate: '/reservations/{id}/cancel',
+            controller: ReservationCancelController::class,
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getTrip() and object.getTrip().getPartner() == user) or (is_granted("ROLE_CUSTOMER") and object.getCustomer() == user)',
+            deserialize: false,
+            openapi: new Operation(
+                summary: 'Cancel a reservation',
+                description: 'Soft-cancels a reservation by changing its status to CANCELLED. Allowed only for the reservation customer, the owning trip partner, or an administrator.',
+                responses: [
+                    '200' => new Response(description: 'Reservation cancelled'),
+                    '403' => new Response(description: 'Not allowed to cancel this reservation'),
+                    '404' => new Response(description: 'Reservation not found'),
+                ]
+            )
         ),
         new Post(
             name: 'api_reservation_for_customer',
@@ -93,13 +106,22 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class Reservation
 {
+    /**
+     * Reservation ownership and soft-cancel rules:
+     * - the customer who booked the reservation owns it
+     * - the partner who owns the trip may cancel it
+     * - administrators may cancel any reservation
+     *
+     * Cancelling a reservation keeps the record for history and notifications,
+     * sets the status to CANCELLED, and clears the seat number so the seat can be reused.
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
+    #[Groups(['reservation:read'])]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ApiProperty(writable: false)]
-    #[Groups(['reservation:read'])]
+    #[Groups(['reservation:read', 'reservation:write'])]
     #[ORM\Column(nullable: true)]
     private ?int $seatNumber = null;
 
@@ -107,12 +129,12 @@ class Reservation
     #[ORM\Column(enumType: ReservationStatus::class)]
     private ReservationStatus $status = ReservationStatus::CONFIRMED;
 
-    #[Groups(['reservation:read'])]
+    #[Groups(['reservation:read', 'reservation:write'])]
     #[ORM\ManyToOne(inversedBy: 'reservation')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Customer $customer = null;
 
-    #[Assert\NotNull]
+    #[Groups(['reservation:read', 'reservation:write'])]
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Trip $trip = null;
