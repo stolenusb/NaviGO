@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logoUrl from '../../assets/images/logo.png';
+import { getSessionDisplayName, getSessionRole } from '../../services/session';
 
 export default function MainNavbar() {
   const navigate = useNavigate();
@@ -48,12 +49,12 @@ export default function MainNavbar() {
     };
   }, []);
 
-  const displayName = accountType === 'admin'
-    ? `${firstName} ${lastName}`.trim() || 'Admin'
-    : accountType === 'partner'
-      ? companyName || 'Partner'
-      : `${firstName} ${lastName}`.trim() || email || 'User';
+  const role = useMemo(() => getSessionRole(), [accountType]);
+  const displayName = getSessionDisplayName();
   const displayEmail = email || (localStorage.getItem('email') ?? '');
+  const dashboardPath = role === 'partner' ? '/dashboard/partner' : role === 'admin' ? '/dashboard/admin' : '/dashboard/customer';
+  const historyPath = role === 'customer' ? '/dashboard/customer/history' : dashboardPath;
+  const profilePath = dashboardPath;
 
   useEffect(() => {
     const onClickOutside = (event: MouseEvent) => {
@@ -117,10 +118,10 @@ export default function MainNavbar() {
                       <div className="font-medium">{displayName}</div>
                       <div className="truncate text-xs text-gray-500">{displayEmail}</div>
                     </div>
-                    <Link to="/profile" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
-                      Profile
+                    <Link to={profilePath} className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+                      Dashboard
                     </Link>
-                    <Link to="/history" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+                    <Link to={historyPath} className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
                       History
                     </Link>
                     <Link to="/settings" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">

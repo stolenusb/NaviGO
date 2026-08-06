@@ -126,4 +126,29 @@ export const apiClient = {
         auth: false,
       },
     ),
+
+  getReservations: () =>
+    request<{ id?: number; seatNumber?: number | null; status?: string; createdAt?: string; trip?: any; customer?: any }[] | { 'hydra:member'?: { id?: number; seatNumber?: number | null; status?: string; createdAt?: string; trip?: any; customer?: any }[] }>(
+      '/reservations',
+      {
+        method: 'GET',
+      },
+    ),
+
+  createReservation: (data: { trip: string; seatNumber?: number }) =>
+    request<{ id?: number; seatNumber?: number | null; status?: string; trip?: any }>(
+      '/reservations',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    ),
+
+  getCurrentUser: () =>
+    request<{ id?: number; email?: string; roles?: string[]; accountType?: string; firstName?: string; lastName?: string; companyName?: string; phone?: string }>('/user', {
+      method: 'GET',
+    }),
+
+  getDashboardSummary: (accountType: 'customer' | 'partner' | 'admin') =>
+    request<Record<string, unknown>>(`/dashboard/${accountType}`),
 };

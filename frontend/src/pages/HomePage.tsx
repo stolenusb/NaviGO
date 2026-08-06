@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { apiClient } from '../services/api/client';
 
 type Trip = {
@@ -281,19 +282,34 @@ export default function HomePage() {
         </form>
       </section>
 
-      <section className="mx-auto mt-10 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {
-          trips.map((trip, index) => (
-            <article key={trip.id ?? index} className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="mx-auto mt-10 max-w-6xl space-y-4">
+        {trips.map((trip, index) => (
+          <article
+            key={trip.id ?? index}
+            className="flex flex-col gap-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between"
+          >
+            <div className="min-w-0 flex-1">
               <h2 className="text-sm font-medium text-gray-900">
                 {trip.route?.departureCity?.name ?? 'Departure'} → {trip.route?.destinationCity?.name ?? 'Arrival'}
               </h2>
-              <p className="mt-2 text-xs text-gray-600">Time: {trip.departureTime ?? 'N/A'}</p>
-              <p className="mt-1 text-xs text-gray-600">Price: {trip.price ?? 'N/A'}</p>
-              <p className="mt-1 text-xs text-gray-600">Status: {trip.status ?? 'N/A'}</p>
-            </article>
-          ))
-        }
+              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-600">
+                <span>Time: {trip.departureTime ?? 'N/A'}</span>
+                <span>Price: {trip.price ?? 'N/A'}</span>
+                <span>Status: {trip.status ?? 'N/A'}</span>
+              </div>
+            </div>
+
+            <div className="flex shrink-0 md:justify-end">
+              <Link
+                to={`/bookings/${trip.id ?? ''}`}
+                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+                aria-label={`Book a reservation for trip ${trip.route?.departureCity?.name ?? 'Departure'} to ${trip.route?.destinationCity?.name ?? 'Arrival'}`}
+              >
+                Book a reservation
+              </Link>
+            </div>
+          </article>
+        ))}
       </section>
     </main>
   );

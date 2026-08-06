@@ -9,7 +9,14 @@ import SignUpCustomerPage from '../pages/auth/SignUpCustomerPage';
 import SignUpPage from '../pages/auth/SignUpPage';
 import SignUpPartnerPage from '../pages/auth/SignUpPartnerPage';
 import AuthRouteGuard from '../components/auth/AuthRouteGuard';
+import RoleRouteGuard from '../components/auth/RoleRouteGuard';
 import MainNavbar from '../components/navigation/MainNavbar';
+import CustomerDashboardPage from '../pages/dashboard/CustomerDashboardPage';
+import PartnerDashboardPage from '../pages/dashboard/PartnerDashboardPage';
+import AdminDashboardPage from '../pages/dashboard/AdminDashboardPage';
+import TripReservationPage from '../pages/trips/TripReservationPage';
+import ReservationHistoryPage from '../pages/reservations/ReservationHistoryPage';
+import ProfilePage from '../pages/ProfilePage';
 
 function AppShell() {
   const location = useLocation();
@@ -20,16 +27,65 @@ function AppShell() {
       {!isAuthPage ? <MainNavbar /> : null}
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login/success" element={<LoginSuccessPage />} />
+        <Route path="/logout" element={<LogoutPage />} />
         <Route
-          path="/login"
+          path="/profile"
           element={
             <AuthRouteGuard>
-              <LoginPage />
+              <ProfilePage />
             </AuthRouteGuard>
           }
         />
-        <Route path="/login/success" element={<LoginSuccessPage />} />
-        <Route path="/logout" element={<LogoutPage />} />
+        <Route
+          path="/bookings/:tripId"
+          element={
+            <AuthRouteGuard>
+              <TripReservationPage />
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/customer"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['customer']}>
+                <CustomerDashboardPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/customer/history"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['customer']}>
+                <ReservationHistoryPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/partner"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['partner']}>
+                <PartnerDashboardPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/admin"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['admin']}>
+                <AdminDashboardPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
         <Route
           path="/signup"
           element={
