@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -21,7 +20,6 @@ use App\Repository\ReservationRepository;
 use App\State\ReservationPersistProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 #[ORM\Table(name: 'reservation')]
@@ -123,8 +121,7 @@ class Reservation
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ApiProperty(writable: false)]
-    #[Groups(['reservation:read'])]
+    #[Groups(['reservation:read', 'reservation:write'])]
     #[ORM\Column(nullable: true)]
     private ?int $seatNumber = null;
 
@@ -132,13 +129,12 @@ class Reservation
     #[ORM\Column(enumType: ReservationStatus::class)]
     private ReservationStatus $status = ReservationStatus::CONFIRMED;
 
-    #[Groups(['reservation:read'])]
+    #[Groups(['reservation:read', 'reservation:write'])]
     #[ORM\ManyToOne(inversedBy: 'reservation')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Customer $customer = null;
 
-    #[Assert\NotNull]
-    #[Groups(['reservation:read'])]
+    #[Groups(['reservation:read', 'reservation:write'])]
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Trip $trip = null;

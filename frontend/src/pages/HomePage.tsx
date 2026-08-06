@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link } from 'react-router-dom';
 import { apiClient } from '../services/api/client';
+import { SeatSelectionModal } from './trips/TripReservationPage'; // adjust path to match your folder structure
 
 type Trip = {
   id?: number;
@@ -31,6 +31,10 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Which trip's seat picker is open, if any
+  const [bookingTripId, setBookingTripId] = useState<number | null>(null);
+
   const cityNames = useMemo(
     () =>
       (Array.isArray(cities) ? cities : [])
@@ -170,147 +174,162 @@ export default function HomePage() {
   };
 
   return (
-    <main className="px-4 pb-24 pt-28 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl text-center">
-        <h1 className="text-2xl font-normal text-black sm:text-[1.75rem]">Home</h1>
-        <p className="mt-3 text-xs text-gray-700">Search for available trips</p>
-      </div>
+    <>
+      <main className="px-4 pb-24 pt-28 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="text-2xl font-normal text-black sm:text-[1.75rem]">Home</h1>
+          <p className="mt-3 text-xs text-gray-700">Search for available trips</p>
+        </div>
 
-      <section className="mx-auto mt-10 max-w-4xl rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-        <form ref={searchFormRef} onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-4 md:items-end">
-          <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
-            Departure city
-            <div className="relative">
-              <input
-                className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
-                value={departureCity}
-                onFocus={() => handleCityFocus('departure')}
-                onChange={(e) => {
-                  setDepartureCity(e.target.value);
-                  setActiveCityField('departure');
-                  setHighlightedIndex(0);
-                }}
-                onKeyDown={handleCityKeyDown}
-                placeholder={citiesLoading ? 'Loading cities...' : 'Casablanca'}
-                autoComplete="off"
-              />
-              {activeCityField === 'departure' && filteredCityNames.length > 0 ? (
-                <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
-                  {filteredCityNames.map((name, index) => (
-                    <button
-                      key={name}
-                      type="button"
-                      className={`block w-full px-3 py-2 text-left text-xs ${
-                        index === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                      onMouseEnter={() => setHighlightedIndex(index)}
-                      onMouseDown={(event) => {
-                        event.preventDefault();
-                        setDepartureCity(name);
-                        closeCityDropdown();
-                      }}
-                    >
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </label>
-
-          <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
-            Arrival city
-            <div className="relative">
-              <input
-                className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
-                value={arrivalCity}
-                onFocus={() => handleCityFocus('arrival')}
-                onChange={(e) => {
-                  setArrivalCity(e.target.value);
-                  setActiveCityField('arrival');
-                  setHighlightedIndex(0);
-                }}
-                onKeyDown={handleCityKeyDown}
-                placeholder={citiesLoading ? 'Loading cities...' : 'Rabat'}
-                autoComplete="off"
-              />
-              {activeCityField === 'arrival' && filteredCityNames.length > 0 ? (
-                <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
-                  {filteredCityNames.map((name, index) => (
-                    <button
-                      key={name}
-                      type="button"
-                      className={`block w-full px-3 py-2 text-left text-xs ${
-                        index === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                      onMouseEnter={() => setHighlightedIndex(index)}
-                      onMouseDown={(event) => {
-                        event.preventDefault();
-                        setArrivalCity(name);
-                        closeCityDropdown();
-                      }}
-                    >
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </label>
-
-          <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
-            Departure time
-            <input
-              type="date"
-              className="rounded-2xl border border-gray-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
-              value={departureTime}
-              onChange={(e) => setDepartureTime(e.target.value)}
-            />
-          </label>
-
-          <div className="md:col-span-1 flex items-end">
-            <button
-              type="submit"
-              className="h-10 w-full rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700"
-              disabled={loading}
-            >
-              {loading ? 'Searching...' : 'Search trips'}
-            </button>
-          </div>
-
-          {error ? <p className="md:col-span-4 text-xs text-red-600">{error}</p> : null}
-        </form>
-      </section>
-
-      <section className="mx-auto mt-10 max-w-6xl space-y-4">
-        {trips.map((trip, index) => (
-          <article
-            key={trip.id ?? index}
-            className="flex flex-col gap-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between"
-          >
-            <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-medium text-gray-900">
-                {trip.route?.departureCity?.name ?? 'Departure'} → {trip.route?.destinationCity?.name ?? 'Arrival'}
-              </h2>
-              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-600">
-                <span>Time: {trip.departureTime ?? 'N/A'}</span>
-                <span>Price: {trip.price ?? 'N/A'}</span>
-                <span>Status: {trip.status ?? 'N/A'}</span>
+        <section className="mx-auto mt-10 max-w-4xl rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <form ref={searchFormRef} onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-4 md:items-end">
+            <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
+              Departure city
+              <div className="relative">
+                <input
+                  className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  value={departureCity}
+                  onFocus={() => handleCityFocus('departure')}
+                  onChange={(e) => {
+                    setDepartureCity(e.target.value);
+                    setActiveCityField('departure');
+                    setHighlightedIndex(0);
+                  }}
+                  onKeyDown={handleCityKeyDown}
+                  placeholder={citiesLoading ? 'Loading cities...' : 'Casablanca'}
+                  autoComplete="off"
+                />
+                {activeCityField === 'departure' && filteredCityNames.length > 0 ? (
+                  <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
+                    {filteredCityNames.map((name, index) => (
+                      <button
+                        key={name}
+                        type="button"
+                        className={`block w-full px-3 py-2 text-left text-xs ${
+                          index === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          setDepartureCity(name);
+                          closeCityDropdown();
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
+            </label>
+
+            <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
+              Arrival city
+              <div className="relative">
+                <input
+                  className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  value={arrivalCity}
+                  onFocus={() => handleCityFocus('arrival')}
+                  onChange={(e) => {
+                    setArrivalCity(e.target.value);
+                    setActiveCityField('arrival');
+                    setHighlightedIndex(0);
+                  }}
+                  onKeyDown={handleCityKeyDown}
+                  placeholder={citiesLoading ? 'Loading cities...' : 'Rabat'}
+                  autoComplete="off"
+                />
+                {activeCityField === 'arrival' && filteredCityNames.length > 0 ? (
+                  <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
+                    {filteredCityNames.map((name, index) => (
+                      <button
+                        key={name}
+                        type="button"
+                        className={`block w-full px-3 py-2 text-left text-xs ${
+                          index === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          setArrivalCity(name);
+                          closeCityDropdown();
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </label>
+
+            <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
+              Departure time
+              <input
+                type="date"
+                className="rounded-2xl border border-gray-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                value={departureTime}
+                onChange={(e) => setDepartureTime(e.target.value)}
+              />
+            </label>
+
+            <div className="md:col-span-1 flex items-end">
+              <button
+                type="submit"
+                className="h-10 w-full rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                disabled={loading}
+              >
+                {loading ? 'Searching...' : 'Search trips'}
+              </button>
             </div>
 
-            <div className="flex shrink-0 md:justify-end">
-              <Link
-                to={`/bookings/${trip.id ?? ''}`}
-                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
-                aria-label={`Book a reservation for trip ${trip.route?.departureCity?.name ?? 'Departure'} to ${trip.route?.destinationCity?.name ?? 'Arrival'}`}
-              >
-                Book a reservation
-              </Link>
-            </div>
-          </article>
-        ))}
-      </section>
-    </main>
+            {error ? <p className="md:col-span-4 text-xs text-red-600">{error}</p> : null}
+          </form>
+        </section>
+
+        <section className="mx-auto mt-10 max-w-6xl space-y-4">
+          {trips.map((trip, index) => (
+            <article
+              key={trip.id ?? index}
+              className="flex flex-col gap-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between"
+            >
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm font-medium text-gray-900">
+                  {trip.route?.departureCity?.name ?? 'Departure'} → {trip.route?.destinationCity?.name ?? 'Arrival'}
+                </h2>
+                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-600">
+                  <span>Time: {trip.departureTime ?? 'N/A'}</span>
+                  <span>Price: {trip.price ?? 'N/A'}</span>
+                  <span>Status: {trip.status ?? 'N/A'}</span>
+                </div>
+              </div>
+
+              <div className="flex shrink-0 md:justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (trip.id) {
+                      setBookingTripId(trip.id);
+                    }
+                  }}
+                  className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+                  aria-label={`Book a reservation for trip ${trip.route?.departureCity?.name ?? 'Departure'} to ${trip.route?.destinationCity?.name ?? 'Arrival'}`}
+                >
+                  Book a reservation
+                </button>
+              </div>
+            </article>
+          ))}
+        </section>
+      </main>
+
+      {bookingTripId !== null ? (
+        <SeatSelectionModal
+          tripId={bookingTripId}
+          onClose={() => setBookingTripId(null)}
+          onBooked={() => setBookingTripId(null)}
+        />
+      ) : null}
+    </>
   );
 }

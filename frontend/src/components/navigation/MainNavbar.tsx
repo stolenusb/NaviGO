@@ -15,9 +15,6 @@ export default function MainNavbar() {
   );
   const [accountType, setAccountType] = useState(() => localStorage.getItem('accountType'));
   const [email, setEmail] = useState(() => localStorage.getItem('email') ?? '');
-  const [firstName, setFirstName] = useState(() => localStorage.getItem('firstName') ?? '');
-  const [lastName, setLastName] = useState(() => localStorage.getItem('lastName') ?? '');
-  const [companyName, setCompanyName] = useState(() => localStorage.getItem('companyName') ?? '');
 
   useEffect(() => {
     setProfileOpen(false);
@@ -35,9 +32,6 @@ export default function MainNavbar() {
       setIsLoggedIn(Boolean(localStorage.getItem('jwt')));
       setAccountType(localStorage.getItem('accountType'));
       setEmail(localStorage.getItem('email') ?? '');
-      setFirstName(localStorage.getItem('firstName') ?? '');
-      setLastName(localStorage.getItem('lastName') ?? '');
-      setCompanyName(localStorage.getItem('companyName') ?? '');
     };
 
     syncFromStorage();

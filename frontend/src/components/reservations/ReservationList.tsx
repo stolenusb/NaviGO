@@ -57,6 +57,21 @@ const formatPrice = (value?: number) => {
 
 const formatStatus = (value?: string) => (value ? value.toUpperCase() : 'UNKNOWN');
 
+const getStatusStyles = (value?: string) => {
+  switch (value) {
+    case 'confirmed':
+      return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
+    case 'cancelled':
+      return 'bg-red-50 text-red-700 ring-red-200';
+    case 'pending':
+      return 'bg-amber-50 text-amber-700 ring-amber-200';
+    case 'completed':
+      return 'bg-blue-50 text-blue-700 ring-blue-200';
+    default:
+      return 'bg-gray-100 text-gray-700 ring-gray-200';
+  }
+};
+
 const getReservationNumber = (reservation: Reservation, index?: number) => {
   if (typeof reservation.id === 'number') return reservation.id;
   const iri = reservation['@id'];
@@ -128,7 +143,7 @@ export default function ReservationList({
   return (
     <>
       {unauthorizedMessage ? (
-        <p className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           {unauthorizedMessage}
         </p>
       ) : null}
@@ -141,17 +156,14 @@ export default function ReservationList({
 
       <div className="mt-5 space-y-3">
         {visibleReservations.map((reservation, index) => (
-          <article
-            key={getStableListKey(reservation, index)}
-            className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
-          >
+          <article key={getStableListKey(reservation, index)} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <button
               type="button"
               onClick={() => toggleReservation(reservation)}
               className="flex w-full items-center gap-3 px-4 py-3 text-left sm:px-5"
             >
               <span
-                className={`inline-flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-transform duration-300 ${
+                className={`inline-flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 text-gray-500 transition-transform duration-300 ${
                   isExpanded(reservation, index) ? 'rotate-180' : 'rotate-0'
                 }`}
                 aria-hidden="true"
@@ -165,9 +177,9 @@ export default function ReservationList({
                     <h3 className="text-[15px] font-semibold leading-tight text-gray-900 sm:text-base">
                       {formatDate(reservation.trip?.departureTime)}
                     </h3>
-                    <p className="text-sm font-medium uppercase tracking-[0.14em] text-emerald-700">
+                    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] ring-1 ring-inset ${getStatusStyles(reservation.status)}`}>
                       {formatStatus(reservation.status)}
-                    </p>
+                    </span>
                   </div>
 
                   <div className="flex flex-col items-end gap-1 text-right">
@@ -219,7 +231,7 @@ export default function ReservationList({
                         type="button"
                         onClick={() => void handleCancel(reservation)}
                         disabled={reservation.id ? cancellingIds.includes(reservation.id) : false}
-                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {reservation.id && cancellingIds.includes(reservation.id) ? 'Cancelling...' : 'Cancel reservation'}
                       </button>

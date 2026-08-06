@@ -25,10 +25,10 @@ class ReservationService
     ) {
     }
 
-    public function createReservation(Trip $trip, Customer $customer): Reservation
+    public function createReservation(Trip $trip, Customer $customer, ?int $requestedSeatNumber = null): Reservation
     {
         // Wrap everything in a transaction with a pessimistic lock
-        $reservation = $this->entityManager->wrapInTransaction(function () use ($trip, $customer) {
+        $reservation = $this->entityManager->wrapInTransaction(function () use ($trip, $customer, $requestedSeatNumber) {
             // 1. Re-fetch the Trip with a pessimistic write lock
             $lockedTrip = $this->entityManager
                 ->createQueryBuilder()
@@ -50,15 +50,23 @@ class ReservationService
             // 3. Re-read all non-cancelled reservations from the DB (fresh data under lock)
             $existingReservations = $this->reservationRepository->findNonCancelledByTrip($lockedTrip);
 
-            // 4. Compute the lowest available seat number (gap-filling)
+            // 4. Compute or validate the requested seat number
             $occupiedSeats = array_map(
                 fn (Reservation $r) => $r->getSeatNumber(),
                 array_filter($existingReservations, fn (Reservation $r) => null !== $r->getSeatNumber())
             );
 
-            $assignedSeat = 1;
-            while (in_array($assignedSeat, $occupiedSeats, true)) {
-                ++$assignedSeat;
+            $assignedSeat = $requestedSeatNumber;
+
+            if (null !== $assignedSeat) {
+                if (in_array($assignedSeat, $occupiedSeats, true)) {
+                    throw new BadRequestHttpException('This seat is already reserved.');
+                }
+            } else {
+                $assignedSeat = 1;
+                while (in_array($assignedSeat, $occupiedSeats, true)) {
+                    ++$assignedSeat;
+                }
             }
 
             // 5. Check vehicle capacity

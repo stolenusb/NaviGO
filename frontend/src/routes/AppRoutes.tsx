@@ -15,18 +15,20 @@ import CustomerDashboardPage from '../pages/dashboard/CustomerDashboardPage';
 import PartnerDashboardPage from '../pages/dashboard/PartnerDashboardPage';
 import PartnerHistoryPage from '../pages/dashboard/PartnerHistoryPage';
 import AdminDashboardPage from '../pages/dashboard/AdminDashboardPage';
-import TripReservationPage from '../pages/trips/TripReservationPage';
+import TripReservationPage, { TripReservationModal } from '../pages/trips/TripReservationPage';
 import ReservationHistoryPage from '../pages/reservations/ReservationHistoryPage';
 import ProfilePage from '../pages/ProfilePage';
 
 function AppShell() {
   const location = useLocation();
   const isAuthPage = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname === '/logout';
+  const state = location.state as { backgroundLocation?: typeof location } | null;
+  const backgroundLocation = state?.backgroundLocation;
 
   return (
     <>
       {!isAuthPage ? <MainNavbar /> : null}
-      <Routes>
+      <Routes location={backgroundLocation ?? location}>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
@@ -99,46 +101,39 @@ function AppShell() {
         />
         <Route
           path="/signup"
-          element={
-            <AuthRouteGuard>
-              <SignUpPage />
-            </AuthRouteGuard>
-          }
+          element={<SignUpPage />}
         />
         <Route
           path="/signup/customer"
-          element={
-            <AuthRouteGuard>
-              <SignUpCustomerPage />
-            </AuthRouteGuard>
-          }
+          element={<SignUpCustomerPage />}
         />
         <Route
           path="/signup/customer/success"
-          element={
-            <AuthRouteGuard>
-              <CustomerSignupSuccessPage />
-            </AuthRouteGuard>
-          }
+          element={<CustomerSignupSuccessPage />}
         />
         <Route
           path="/signup/partner"
-          element={
-            <AuthRouteGuard>
-              <SignUpPartnerPage />
-            </AuthRouteGuard>
-          }
+          element={<SignUpPartnerPage />}
         />
         <Route
           path="/signup/partner/success"
-          element={
-            <AuthRouteGuard>
-              <PartnerSignupSuccessPage />
-            </AuthRouteGuard>
-          }
+          element={<PartnerSignupSuccessPage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {backgroundLocation ? (
+        <Routes>
+          <Route
+            path="/bookings/:tripId"
+            element={
+              <AuthRouteGuard>
+              <TripReservationModal />
+              </AuthRouteGuard>
+            }
+          />
+        </Routes>
+      ) : null}
     </>
   );
 }
