@@ -6,7 +6,6 @@ namespace App\Repository;
 
 use App\Entity\Partner;
 use App\Entity\Trip;
-use App\Enum\TripStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

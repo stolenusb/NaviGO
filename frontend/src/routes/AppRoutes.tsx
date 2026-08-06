@@ -15,7 +15,6 @@ import CustomerDashboardPage from '../pages/dashboard/CustomerDashboardPage';
 import PartnerDashboardPage from '../pages/dashboard/PartnerDashboardPage';
 import PartnerHistoryPage from '../pages/dashboard/PartnerHistoryPage';
 import AdminDashboardPage from '../pages/dashboard/AdminDashboardPage';
-import TripReservationPage, { TripReservationModal } from '../pages/trips/TripReservationPage';
 import ReservationHistoryPage from '../pages/reservations/ReservationHistoryPage';
 import ProfilePage from '../pages/ProfilePage';
 
@@ -38,14 +37,6 @@ function AppShell() {
           element={
             <AuthRouteGuard>
               <ProfilePage />
-            </AuthRouteGuard>
-          }
-        />
-        <Route
-          path="/bookings/:tripId"
-          element={
-            <AuthRouteGuard>
-              <TripReservationPage />
             </AuthRouteGuard>
           }
         />
@@ -121,19 +112,6 @@ function AppShell() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
-      {backgroundLocation ? (
-        <Routes>
-          <Route
-            path="/bookings/:tripId"
-            element={
-              <AuthRouteGuard>
-              <TripReservationModal />
-              </AuthRouteGuard>
-            }
-          />
-        </Routes>
-      ) : null}
     </>
   );
 }

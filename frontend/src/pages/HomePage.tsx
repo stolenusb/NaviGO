@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { apiClient } from '../services/api/client';
-import { SeatSelectionModal } from './trips/TripReservationPage'; // adjust path to match your folder structure
+import SeatSelection from '../components/trips/SeatSelection';
 
 type Trip = {
   id?: number;
   departureTime?: string;
   price?: number;
   status?: string;
+  availableSeats?: number | null;
+  vehicle?: string | { id?: number; seatCapacity?: number | null };
   route?: {
     departureCity?: { name?: string };
     destinationCity?: { name?: string };
@@ -31,10 +33,9 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Which trip's seat picker is open, if any
-  const [bookingTripId, setBookingTripId] = useState<number | null>(null);
-
+  const [activeTripId, setActiveTripId] = useState<number | null>(null);
+  const [reservedSeats, setReservedSeats] = useState<number[]>([]);
+  const [vehicleSeatCapacity, setVehicleSeatCapacity] = useState<number | null>(null);
   const cityNames = useMemo(
     () =>
       (Array.isArray(cities) ? cities : [])
@@ -144,6 +145,79 @@ export default function HomePage() {
 
     void loadCities();
   }, []);
+
+  useEffect(() => {
+    const loadReservedSeats = async () => {
+      if (activeTripId === null) {
+        setReservedSeats([]);
+        setVehicleSeatCapacity(null);
+        return;
+      }
+
+      try {
+        const trip = trips.find((item) => item.id === activeTripId) ?? null;
+        if (trip) {
+          if (typeof trip.vehicle === 'object' && trip.vehicle) {
+            setVehicleSeatCapacity(trip.vehicle.seatCapacity ?? null);
+          } else {
+            try {
+              const tripData = await apiClient.getTrip(`/api/trips/${activeTripId}`);
+              if (typeof tripData.vehicle === 'object' && tripData.vehicle) {
+                setVehicleSeatCapacity(tripData.vehicle.seatCapacity ?? null);
+              } else if (typeof tripData.vehicle === 'string') {
+                const vehicle = await apiClient.getVehicle(tripData.vehicle);
+                setVehicleSeatCapacity(vehicle.seatCapacity ?? null);
+              } else {
+                setVehicleSeatCapacity(null);
+              }
+            } catch {
+              setVehicleSeatCapacity(null);
+            }
+          }
+        }
+
+        const reservationsResponse = await apiClient.getReservations();
+        const reservations = Array.isArray(reservationsResponse)
+          ? reservationsResponse
+          : (reservationsResponse as { member?: Array<{ seatNumber?: number | null; trip?: any; status?: string }>; 'hydra:member'?: Array<{ seatNumber?: number | null; trip?: any; status?: string }> }).member ??
+            (reservationsResponse as { member?: Array<{ seatNumber?: number | null; trip?: any; status?: string }>; 'hydra:member'?: Array<{ seatNumber?: number | null; trip?: any; status?: string }> })['hydra:member'] ??
+            [];
+
+        const currentTripSeats = reservations
+          .filter((reservation) => {
+            if (reservation.status === 'cancelled') return false;
+            if (typeof reservation.trip === 'string') {
+              return reservation.trip.endsWith(`/api/trips/${activeTripId}`);
+            }
+            return reservation.trip?.id === activeTripId;
+          })
+          .map((reservation) => reservation.seatNumber)
+          .filter((seat): seat is number => typeof seat === 'number');
+
+        setReservedSeats(currentTripSeats);
+      } catch {
+        setReservedSeats([]);
+      }
+    };
+
+    void loadReservedSeats();
+  }, [activeTripId]);
+
+  useEffect(() => {
+    if (activeTripId === null) return;
+    console.debug('Reserved seats for trip', activeTripId, reservedSeats);
+  }, [activeTripId, reservedSeats]);
+
+  useEffect(() => {
+    if (activeTripId === null) return;
+    console.debug('SeatSelection props', {
+      activeTripId,
+      reservedSeats,
+      seatCount: vehicleSeatCapacity,
+    });
+  }, [activeTripId, reservedSeats, vehicleSeatCapacity]);
+
+  const seatCount = vehicleSeatCapacity ?? trips.find((trip) => trip.id === activeTripId)?.availableSeats ?? 40;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -293,43 +367,53 @@ export default function HomePage() {
               key={trip.id ?? index}
               className="flex flex-col gap-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between"
             >
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-medium text-gray-900">
-                  {trip.route?.departureCity?.name ?? 'Departure'} → {trip.route?.destinationCity?.name ?? 'Arrival'}
-                </h2>
-                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-600">
-                  <span>Time: {trip.departureTime ?? 'N/A'}</span>
-                  <span>Price: {trip.price ?? 'N/A'}</span>
-                  <span>Status: {trip.status ?? 'N/A'}</span>
-                </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-medium text-gray-900">
+                {trip.route?.departureCity?.name ?? 'Departure'} → {trip.route?.destinationCity?.name ?? 'Arrival'}
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-600">
+                <span>Time: {trip.departureTime ?? 'N/A'}</span>
+                <span>Price: {trip.price ?? 'N/A'}</span>
+                <span>Status: {trip.status ?? 'N/A'}</span>
               </div>
+            </div>
 
-              <div className="flex shrink-0 md:justify-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (trip.id) {
-                      setBookingTripId(trip.id);
-                    }
-                  }}
-                  className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
-                  aria-label={`Book a reservation for trip ${trip.route?.departureCity?.name ?? 'Departure'} to ${trip.route?.destinationCity?.name ?? 'Arrival'}`}
-                >
-                  Book a reservation
-                </button>
-              </div>
-            </article>
-          ))}
+            <div className="flex shrink-0 md:justify-end">
+              <button
+                type="button"
+                onClick={() => setActiveTripId(trip.id ?? null)}
+                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+                aria-label={`Book a reservation for trip ${trip.route?.departureCity?.name ?? 'Departure'} to ${trip.route?.destinationCity?.name ?? 'Arrival'}`}
+              >
+                Book a reservation
+              </button>
+            </div>
+          </article>
+        ))}
         </section>
+        {activeTripId !== null ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-sm animate-[fadeIn_180ms_ease-out]">
+            <div className="relative w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl animate-[scaleIn_180ms_ease-out]">
+              <button
+                type="button"
+                onClick={() => setActiveTripId(null)}
+                className="absolute -right-2 -top-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-600 shadow-lg transition hover:bg-gray-100 hover:text-gray-900"
+                aria-label="Close seat selection"
+              >
+                ✕
+              </button>
+              <div className="space-y-4">
+                <p className="text-sm font-medium text-gray-900">Seat selection placeholder</p>
+                <p className="text-xs text-gray-600">Trip ID: {activeTripId}</p>
+                <SeatSelection
+                  seats={Array.from({ length: seatCount }, (_, index) => index + 1)}
+                  reservedSeats={reservedSeats}
+                />
+              </div>
+            </div>
+          </div>
+        ) : null}
       </main>
-
-      {bookingTripId !== null ? (
-        <SeatSelectionModal
-          tripId={bookingTripId}
-          onClose={() => setBookingTripId(null)}
-          onBooked={() => setBookingTripId(null)}
-        />
-      ) : null}
     </>
   );
 }
