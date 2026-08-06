@@ -95,7 +95,16 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 function normalizeApiPath(path: string) {
-  return path.startsWith('/api/') ? path.slice(4) : path;
+  return path.replace(/^\/api(?=\/)/, '');
+}
+
+function normalizeResourceIri(iri: string) {
+  if (/^https?:\/\//i.test(iri)) {
+    const url = new URL(iri);
+    return `${url.pathname}${url.search}${url.hash}`;
+  }
+
+  return normalizeApiPath(iri);
 }
 
 export const apiClient = {
@@ -147,8 +156,38 @@ export const apiClient = {
     ),
 
   getTrip: (iri: string) =>
-    request<{ id?: number; departureTime?: string; price?: number; status?: string; route?: { departureCity?: { name?: string }; destinationCity?: { name?: string } } }>(iri, {
+    request<{ id?: number; departureTime?: string; price?: number; status?: string; route?: string | { departureCity?: { name?: string }; destinationCity?: { name?: string } }; vehicle?: string | { id?: number; seatCapacity?: number | null; brand?: string; licensePlate?: string; driverName?: string } }>(normalizeResourceIri(iri), {
       auth: false,
+    }),
+
+  getRoute: (iri: string) =>
+    request<{ id?: number; departureCity?: { name?: string }; destinationCity?: { name?: string } }>(normalizeResourceIri(iri), {
+      auth: false,
+    }),
+
+  getVehicle: (iri: string) =>
+    request<{ id?: number; brand?: string; licensePlate?: string; seatCapacity?: number | null; driverName?: string }>(normalizeResourceIri(iri), {
+      auth: false,
+    }),
+
+  getPartnerTrips: () =>
+    request<{ id?: number; departureTime?: string; price?: number; status?: string; availableSeats?: number | null; route?: { departureCity?: { name?: string }; destinationCity?: { name?: string } }; vehicle?: { id?: number; seatCapacity?: number | null; brand?: string; driverName?: string } }[] | { 'hydra:member'?: { id?: number; departureTime?: string; price?: number; status?: string; availableSeats?: number | null; route?: { departureCity?: { name?: string }; destinationCity?: { name?: string } }; vehicle?: { id?: number; seatCapacity?: number | null; brand?: string; driverName?: string } }[] }>('/trips', {
+      method: 'GET',
+    }),
+
+  startTrip: (iri: string) =>
+    request<{ message?: string; status?: string }>(`${normalizeApiPath(iri)}/start`, {
+      method: 'PATCH',
+    }),
+
+  completeTrip: (iri: string) =>
+    request<{ message?: string; status?: string }>(`${normalizeApiPath(iri)}/complete`, {
+      method: 'PATCH',
+    }),
+
+  cancelTrip: (iri: string) =>
+    request<{ message?: string; status?: string }>(`${normalizeApiPath(iri)}/cancel`, {
+      method: 'PATCH',
     }),
 
   getReservations: () =>

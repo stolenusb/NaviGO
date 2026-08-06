@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout';
+import { Spinner } from '#components/ui/spinner';
 
 export default function LogoutPage() {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ export default function LogoutPage() {
       <div className="space-y-6 text-center">
         <h1 className="text-3xl font-normal text-black sm:text-[2.5rem]">Logout</h1>
         <p className={status === 'error' ? 'text-sm text-red-600' : 'text-sm text-gray-700'}>{message}</p>
+
+        <Spinner/>
 
         {status === 'success' ? (
           <div className="pt-2">

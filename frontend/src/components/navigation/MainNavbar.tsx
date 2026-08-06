@@ -53,7 +53,7 @@ export default function MainNavbar() {
   const displayName = getSessionDisplayName();
   const displayEmail = email || (localStorage.getItem('email') ?? '');
   const dashboardPath = role === 'partner' ? '/dashboard/partner' : role === 'admin' ? '/dashboard/admin' : '/dashboard/customer';
-  const historyPath = role === 'customer' ? '/dashboard/customer/history' : dashboardPath;
+  const historyPath = role === 'customer' ? '/dashboard/customer/history' : role === 'partner' ? '/dashboard/partner/history' : dashboardPath;
   const profilePath = dashboardPath;
 
   useEffect(() => {

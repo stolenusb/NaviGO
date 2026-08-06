@@ -13,6 +13,7 @@ import RoleRouteGuard from '../components/auth/RoleRouteGuard';
 import MainNavbar from '../components/navigation/MainNavbar';
 import CustomerDashboardPage from '../pages/dashboard/CustomerDashboardPage';
 import PartnerDashboardPage from '../pages/dashboard/PartnerDashboardPage';
+import PartnerHistoryPage from '../pages/dashboard/PartnerHistoryPage';
 import AdminDashboardPage from '../pages/dashboard/AdminDashboardPage';
 import TripReservationPage from '../pages/trips/TripReservationPage';
 import ReservationHistoryPage from '../pages/reservations/ReservationHistoryPage';
@@ -72,6 +73,16 @@ function AppShell() {
             <AuthRouteGuard>
               <RoleRouteGuard allowedRoles={['partner']}>
                 <PartnerDashboardPage />
+              </RoleRouteGuard>
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/partner/history"
+          element={
+            <AuthRouteGuard>
+              <RoleRouteGuard allowedRoles={['partner']}>
+                <PartnerHistoryPage />
               </RoleRouteGuard>
             </AuthRouteGuard>
           }

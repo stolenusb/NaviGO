@@ -36,7 +36,15 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(
             controller: TripCollectionController::class,
             security: 'is_granted("PUBLIC_ACCESS") or is_granted("ROLE_CUSTOMER")',
-            normalizationContext: ['groups' => ['trip:read']]
+            normalizationContext: ['groups' => ['trip:read']],
+            openapi: new Operation(
+                summary: 'List trips',
+                description: 'Returns searchable trips with embedded route and vehicle details for booking and dashboard views.',
+                responses: [
+                    '200' => new Response(description: 'Trip collection with embedded route and vehicle data'),
+                    '401' => new Response(description: 'Unauthorized'),
+                ]
+            )
         ),
         new Get(
             security: 'is_granted("PUBLIC_ACCESS") or is_granted("ROLE_CUSTOMER")',
@@ -128,13 +136,12 @@ class Trip
     #[ORM\Column(type: 'string', enumType: TripStatus::class)]
     private TripStatus $status = TripStatus::SCHEDULED;
 
-    #[Groups(['trip:read', 'trip:write'])]
-    #[Assert\NotNull]
+    #[Groups(['trip:read', 'trip:write', 'route:read'])]
     #[ORM\ManyToOne(inversedBy: 'trips')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Route $route = null;
 
-    #[Groups(['trip:read', 'trip:write'])]
+    #[Groups(['trip:read', 'trip:write', 'vehicle:read'])]
     #[Assert\NotNull]
     #[ORM\ManyToOne(inversedBy: 'trips')]
     #[ORM\JoinColumn(nullable: false)]
