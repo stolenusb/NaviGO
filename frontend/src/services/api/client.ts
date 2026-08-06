@@ -50,6 +50,15 @@ function extractErrorMessage(payload: any): string {
   return 'Request failed';
 }
 
+function clearExpiredSession() {
+  localStorage.removeItem('jwt');
+  localStorage.removeItem('email');
+  localStorage.removeItem('accountType');
+  localStorage.removeItem('firstName');
+  localStorage.removeItem('lastName');
+  localStorage.removeItem('companyName');
+}
+
 type RequestOptions = RequestInit & {
   auth?: boolean;
 };
@@ -57,7 +66,10 @@ type RequestOptions = RequestInit & {
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const jwt = localStorage.getItem('jwt');
   const { auth = true, ...fetchOptions } = options;
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const isAbsolutePath = /^https?:\/\//i.test(path);
+  const requestUrl = isAbsolutePath ? path : `${API_BASE_URL}${path}`;
+
+  const response = await fetch(requestUrl, {
     headers: {
       'Content-Type': 'application/ld+json',
       ...((jwt && auth) ? { Authorization: `Bearer ${jwt}` } : {}),
@@ -73,10 +85,17 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     const errorMessage = extractErrorMessage(payload);
+    if (response.status === 401) {
+      clearExpiredSession();
+    }
     throw { message: errorMessage, status: response.status } satisfies ApiError;
   }
 
   return payload as T;
+}
+
+function normalizeApiPath(path: string) {
+  return path.startsWith('/api/') ? path.slice(4) : path;
 }
 
 export const apiClient = {
@@ -127,6 +146,11 @@ export const apiClient = {
       },
     ),
 
+  getTrip: (iri: string) =>
+    request<{ id?: number; departureTime?: string; price?: number; status?: string; route?: { departureCity?: { name?: string }; destinationCity?: { name?: string } } }>(iri, {
+      auth: false,
+    }),
+
   getReservations: () =>
     request<{ id?: number; seatNumber?: number | null; status?: string; createdAt?: string; trip?: any; customer?: any }[] | { 'hydra:member'?: { id?: number; seatNumber?: number | null; status?: string; createdAt?: string; trip?: any; customer?: any }[] }>(
       '/reservations',
@@ -134,6 +158,11 @@ export const apiClient = {
         method: 'GET',
       },
     ),
+
+  cancelReservation: (iri: string) =>
+    request<void>(`${normalizeApiPath(iri)}/cancel`, {
+      method: 'POST',
+    }),
 
   createReservation: (data: { trip: string; seatNumber?: number }) =>
     request<{ id?: number; seatNumber?: number | null; status?: string; trip?: any }>(

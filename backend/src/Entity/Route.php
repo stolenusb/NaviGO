@@ -14,6 +14,7 @@ use App\Repository\RouteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RouteRepository::class)]
@@ -44,16 +45,19 @@ class Route
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['route:read'])]
     private ?int $id = null;
 
     #[Assert\NotNull]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['route:read'])]
     private ?City $departureCity = null;
 
     #[Assert\NotNull]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['route:read'])]
     private ?City $destinationCity = null;
 
     #[ORM\ManyToOne(inversedBy: 'routes')]

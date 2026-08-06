@@ -86,6 +86,21 @@ class ReservationService
         return $reservation;
     }
 
+    public function cancelReservation(Reservation $reservation): Reservation
+    {
+        if (ReservationStatus::CANCELLED === $reservation->getStatus()) {
+            return $reservation;
+        }
+
+        $reservation->setStatus(ReservationStatus::CANCELLED);
+        $reservation->setSeatNumber(null);
+
+        $this->entityManager->persist($reservation);
+        $this->entityManager->flush();
+
+        return $reservation;
+    }
+
     private function validateTripStatus(Trip $trip): void
     {
         match ($trip->getStatus()) {
