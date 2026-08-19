@@ -36,9 +36,10 @@ class PartnerReservationController extends AbstractController
 
         $customerId = $data['customerId'] ?? null;
         $tripId = $data['tripId'] ?? null;
+        $seatNumber = $data['seatNumber'] ?? null;
 
-        if (!$customerId || !$tripId) {
-            return $this->json(['error' => 'customerId and tripId are required.'], 400);
+        if (!$customerId || !$tripId || !is_int($seatNumber) || $seatNumber < 1) {
+            return $this->json(['error' => 'customerId, tripId, and a valid seatNumber are required.'], 400);
         }
 
         // Accept both raw IDs (14) and IRIs (/api/customers/14)
@@ -67,9 +68,20 @@ class PartnerReservationController extends AbstractController
             return $this->json(['error' => 'You can only create reservations for your own trips.'], 403);
         }
 
+        foreach ($trip->getReservations() as $existingReservation) {
+            if (\App\Enum\ReservationStatus::CANCELLED !== $existingReservation->getStatus() && $existingReservation->getSeatNumber() === $seatNumber) {
+                return $this->json(['error' => 'This seat is already reserved.'], 400);
+            }
+        }
+
+        if (null !== $trip->getVehicle()?->getSeatCapacity() && $seatNumber > $trip->getVehicle()->getSeatCapacity()) {
+            return $this->json(['error' => 'This seat does not exist on the selected vehicle.'], 400);
+        }
+
         $reservation = new Reservation();
         $reservation->setCustomer($customer);
         $reservation->setTrip($trip);
+        $reservation->setSeatNumber($seatNumber);
         $reservation->setStatus(\App\Enum\ReservationStatus::CONFIRMED);
 
         $entityManager->persist($reservation);

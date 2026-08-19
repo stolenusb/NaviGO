@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use App\Controller\PartnerCustomerController;
 use App\Repository\CustomerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -22,6 +23,14 @@ use Symfony\Component\Validator\Constraints as Assert;
     shortName: 'Customer',
     description: 'Represents a customer passenger profile. Registered publicly, manageable by the customer themselves or an administrator.',
     operations: [
+        new GetCollection(
+            name: 'api_partner_customer_by_phone',
+            uriTemplate: '/customers/by-phone',
+            controller: PartnerCustomerController::class,
+            security: 'is_granted("ROLE_PARTNER")',
+            read: false,
+            normalizationContext: ['groups' => ['customer:read']],
+        ),
         new GetCollection(security: 'is_granted("ROLE_ADMIN")'),
         new Get(security: 'is_granted("ROLE_ADMIN") or object == user'),
         new Post(security: 'is_granted("PUBLIC_ACCESS")'),
