@@ -86,7 +86,7 @@ export default function SeatSelection({
   const effectiveSelectedSeat = selectedSeat ?? localSelectedSeat;
 
   const seatButtonClass = (seat: number) =>
-    `flex aspect-square h-7.5 w-[30px] shrink-0 items-center justify-center rounded-lg border p-0 text-[9px] font-semibold leading-none transition sm:h-8 sm:w-8 sm:text-[10px] ${
+    `flex aspect-square h-6 w-6 shrink-0 items-center justify-center rounded-md border p-0 text-[8px] font-semibold leading-none transition sm:h-7 sm:w-7 sm:text-[9px] ${
       reservedSeats.includes(seat)
         ? 'cursor-not-allowed border-gray-200 bg-gray-200 text-gray-400'
         : effectiveSelectedSeat === seat
@@ -114,28 +114,28 @@ export default function SeatSelection({
   );
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:p-5">
-      <div className="space-y-2 overflow-x-auto">
+    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3 sm:p-4">
+      <div className="space-y-1.5 overflow-x-auto">
         {seatRows.map((row, rowIndex) => (
           <div
             key={`row-${rowIndex}`}
-            className="grid grid-cols-[repeat(2,1.875rem)_1rem_repeat(2,1.875rem)] items-center justify-center gap-x-1.5 sm:grid-cols-[repeat(2,2rem)_1rem_repeat(2,2rem)]"
+            className="grid grid-cols-[repeat(2,1.5rem)_0.75rem_repeat(2,1.5rem)] items-center justify-center gap-x-1 sm:grid-cols-[repeat(2,1.75rem)_0.75rem_repeat(2,1.75rem)]"
           >
-            <div className="col-span-2 col-start-1 flex items-center gap-1.5">
+            <div className="col-span-2 col-start-1 flex items-center gap-1">
               {row.left.map((seat) => (
                 <Seat key={seat} seat={seat} />
               ))}
             </div>
 
-            <div className="col-start-3 flex h-7.5 items-center justify-center sm:h-8" aria-hidden="true">
+            <div className="col-start-3 flex h-6 items-center justify-center sm:h-7" aria-hidden="true">
               <div className="h-full w-px bg-gray-400" />
             </div>
 
-            <div className="col-span-2 col-start-4 flex items-center gap-1.5">
+            <div className="col-span-2 col-start-4 flex items-center gap-1">
               {row.isStairsRow ? (
-                <div className="col-span-2 flex h-7.5 w-full items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 bg-gray-100 text-gray-400 sm:h-8">
+                <div className="col-span-2 flex h-6 w-full items-center justify-center gap-1 rounded-md border border-dashed border-gray-300 bg-gray-100 text-gray-400 sm:h-7">
                   <StairsIcon className="h-2.5 w-2.5" />
-                  <span className="text-[8px] font-medium uppercase tracking-wide sm:text-[9px]">Door</span>
+                  <span className="text-[7px] font-medium uppercase tracking-wide sm:text-[8px]">Door</span>
                 </div>
               ) : (
                 row.right.map((seat) => <Seat key={seat} seat={seat} />)
