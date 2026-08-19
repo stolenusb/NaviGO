@@ -289,4 +289,14 @@ export const apiClient = {
 
   getDashboardSummary: (accountType: 'customer' | 'partner' | 'admin') =>
     request<Record<string, unknown>>(`/dashboard/${accountType}`),
+
+  getAdminCustomers: () =>
+    request<{ id?: number; '@id'?: string; firstName?: string; lastName?: string; email?: string; phone?: string; createdAt?: string }[] | { member?: { id?: number; '@id'?: string; firstName?: string; lastName?: string; email?: string; phone?: string; createdAt?: string }[]; 'hydra:member'?: { id?: number; '@id'?: string; firstName?: string; lastName?: string; email?: string; phone?: string; createdAt?: string }[] }>('/customers?itemsPerPage=1000'),
+
+  getAdminPartners: () =>
+    request<{ id?: number; '@id'?: string; companyName?: string; email?: string; phone?: string; status?: string }[] | { member?: { id?: number; '@id'?: string; companyName?: string; email?: string; phone?: string; status?: string }[]; 'hydra:member'?: { id?: number; '@id'?: string; companyName?: string; email?: string; phone?: string; status?: string }[] }>('/partners?itemsPerPage=1000'),
+
+  approvePartner: (iri: string) => request<{ message?: string }>(`${normalizeApiPath(iri)}/approve`, { method: 'PATCH' }),
+
+  rejectPartner: (iri: string) => request<{ message?: string }>(`${normalizeApiPath(iri)}/reject`, { method: 'PATCH' }),
 };
