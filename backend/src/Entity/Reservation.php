@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
@@ -46,6 +47,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
         new Patch(
             security: 'is_granted("ROLE_PARTNER") or is_granted("ROLE_ADMIN")',
+        ),
+        new Delete(
+            security: 'is_granted("ROLE_ADMIN")',
         ),
         new Post(
             name: 'api_reservation_cancel',

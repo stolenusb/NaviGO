@@ -59,7 +59,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             denormalizationContext: ['groups' => ['trip:write']]
         ),
         new Delete(
-            security: 'is_granted("ROLE_ADMIN")'
+            security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getPartner() == user)'
         ),
 
         // Custom Trip Status update operations

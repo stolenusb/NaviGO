@@ -299,4 +299,13 @@ export const apiClient = {
   approvePartner: (iri: string) => request<{ message?: string }>(`${normalizeApiPath(iri)}/approve`, { method: 'PATCH' }),
 
   rejectPartner: (iri: string) => request<{ message?: string }>(`${normalizeApiPath(iri)}/reject`, { method: 'PATCH' }),
+
+  getAdminAdministrators: () => request<any>('/administrators?itemsPerPage=1000'),
+  getAdminTrips: () => request<any>('/trips?itemsPerPage=1000'),
+  getAdminRoutes: () => request<any>('/routes?itemsPerPage=1000'),
+  getAdminVehicles: () => request<any>('/vehicles?itemsPerPage=1000'),
+  getAdminReservations: () => request<any>('/reservations?itemsPerPage=1000'),
+  createAdminUser: (data: Record<string, unknown>) => request<any>('/admin/users', { method: 'POST', body: JSON.stringify(data) }),
+  updateAdminPassword: (id: number, password: string) => request<any>(`/admin/users/${id}/password`, { method: 'PATCH', body: JSON.stringify({ password }) }),
+  deleteAdminResource: (resourceIri: string) => request<void>(normalizeResourceIri(resourceIri), { method: 'DELETE' }),
 };
