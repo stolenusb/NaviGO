@@ -39,6 +39,8 @@ class CurrentUserController extends AbstractController
             'firstName' => method_exists($user, 'getFirstName') ? $user->getFirstName() : null,
             'lastName' => method_exists($user, 'getLastName') ? $user->getLastName() : null,
             'companyName' => method_exists($user, 'getCompanyName') ? $user->getCompanyName() : null,
+            'address' => method_exists($user, 'getAddress') ? $user->getAddress() : null,
+            'description' => method_exists($user, 'getDescription') ? $user->getDescription() : null,
             'phone' => $user->getPhone(),
             'createdAt' => $user->getCreatedAt()?->format(DATE_ATOM),
         ]);
