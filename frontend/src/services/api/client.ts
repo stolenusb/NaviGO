@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api').replace(/\/$/, '');
 
 export type ApiError = {
   message: string;
@@ -64,18 +64,19 @@ type RequestOptions = RequestInit & {
 };
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const jwt = localStorage.getItem('jwt');
   const { auth = true, ...fetchOptions } = options;
+  const jwt = auth ? localStorage.getItem('jwt') : null;
   const isAbsolutePath = /^https?:\/\//i.test(path);
   const requestUrl = isAbsolutePath ? path : `${API_BASE_URL}${path}`;
+  const requestHeaders = new Headers(fetchOptions.headers);
+  requestHeaders.set('Content-Type', requestHeaders.get('Content-Type') ?? 'application/ld+json');
+  if (auth && jwt) {
+    requestHeaders.set('Authorization', `Bearer ${jwt}`);
+  }
 
   const response = await fetch(requestUrl, {
-    headers: {
-      'Content-Type': 'application/ld+json',
-      ...((jwt && auth) ? { Authorization: `Bearer ${jwt}` } : {}),
-      ...(fetchOptions.headers ?? {}),
-    },
     ...fetchOptions,
+    headers: requestHeaders,
   });
 
   const contentType = response.headers.get('content-type') ?? '';
@@ -85,7 +86,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     const errorMessage = extractErrorMessage(payload);
-    if (response.status === 401) {
+    // Keep the existing session on ordinary API errors. A failed profile update
+    // must not log the user out or erase their local profile data.
+    if (response.status === 401 && path === '/user') {
       clearExpiredSession();
     }
     throw { message: errorMessage, status: response.status } satisfies ApiError;
@@ -114,7 +117,7 @@ export const apiClient = {
       body: JSON.stringify({ email, password }),
     }),
 
-  me: () => request<{ id?: number; email?: string; roles?: string[]; accountType?: string; firstName?: string; lastName?: string; companyName?: string; phone?: string; createdAt?: string }>('/user', {
+  me: () => request<{ '@id'?: string; id?: number; email?: string; roles?: string[]; accountType?: string; firstName?: string; lastName?: string; companyName?: string; phone?: string; address?: string; description?: string; createdAt?: string }>('/user', {
     method: 'GET',
   }),
 
@@ -141,7 +144,7 @@ export const apiClient = {
     if (filters?.departureTime) params.set('departureTime', filters.departureTime);
 
     const query = params.toString();
-    
+
     return request(`/trips${query ? `?${query}` : ''}`, {
       auth: false,
     });
@@ -213,8 +216,15 @@ export const apiClient = {
     ),
 
   getCurrentUser: () =>
-    request<{ id?: number; email?: string; roles?: string[]; accountType?: string; firstName?: string; lastName?: string; companyName?: string; phone?: string }>('/user', {
+    request<{ '@id'?: string; id?: number; email?: string; roles?: string[]; accountType?: string; firstName?: string; lastName?: string; companyName?: string; phone?: string; address?: string; description?: string; createdAt?: string }>('/user', {
       method: 'GET',
+    }),
+
+  updateCurrentUser: (iri: string, data: Record<string, unknown>) =>
+    request<Record<string, unknown>>(normalizeResourceIri(iri), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/merge-patch+json' },
+      body: JSON.stringify(data),
     }),
 
   getDashboardSummary: (accountType: 'customer' | 'partner' | 'admin') =>

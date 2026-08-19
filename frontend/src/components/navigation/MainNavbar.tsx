@@ -118,7 +118,7 @@ export default function MainNavbar() {
                     <Link to={historyPath} className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
                       History
                     </Link>
-                    <Link to="/settings" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+                    <Link to="/dashboard/settings" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
                       Settings
                     </Link>
                     <button

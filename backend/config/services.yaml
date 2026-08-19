@@ -29,6 +29,11 @@ services:
         tags:
             - { name: 'doctrine.event_listener', event: 'preUpdate' }
             - { name: 'doctrine.event_listener', event: 'preRemove' }
+
+    App\EventListener\UserPasswordListener:
+        tags:
+            - { name: 'doctrine.orm.entity_listener', event: 'prePersist', entity: 'App\\Entity\\User' }
+            - { name: 'doctrine.orm.entity_listener', event: 'preUpdate', entity: 'App\\Entity\\User' }
     
     App\EventListener\KernelExceptionListener:
         tags:

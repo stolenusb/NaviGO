@@ -66,18 +66,20 @@ export default function CustomerDashboardPage() {
   return (
     <main className="px-4 pb-24 pt-28 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Customer dashboard</p>
-          <h1 className="mt-2 text-2xl font-normal text-black">Welcome back, {getSessionDisplayName()}</h1>
-          {unauthorized ? (
-            <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              Your session expired. Please log in again to view your reservations and dashboard data.
-            </p>
-          ) : null}
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link to="/" className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Search trips</Link>
-            <Link to="/dashboard/customer/settings" className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Account Settings</Link>
-            <Link to="/dashboard/customer/history" className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Reservations History</Link>
+        <section className="overflow-hidden rounded-[32px] border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-8 text-white shadow-sm sm:px-10 sm:py-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">Customer dashboard</p>
+          <div className="mt-3 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div>
+              <h1 className="text-3xl font-normal tracking-tight sm:text-4xl">Welcome back, {getSessionDisplayName()}</h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Find your next trip, manage your bookings, and keep your travel details close at hand.</p>
+            </div>
+            <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-100">Customer</span>
+          </div>
+          {unauthorized ? <p className="mt-5 rounded-2xl border border-amber-300/30 bg-amber-100/10 px-4 py-3 text-sm text-amber-100">Your session expired. Please log in again to view your reservations and dashboard data.</p> : null}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link to="/" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-blue-50">Search trips</Link>
+            <Link to="/dashboard/settings" className="rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20">Account settings</Link>
+            <Link to="/dashboard/customer/history" className="rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20">Reservation history</Link>
           </div>
         </section>
 
