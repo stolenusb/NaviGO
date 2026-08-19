@@ -44,12 +44,15 @@ export default function ReservationHistoryPage() {
   return (
     <main className="px-4 pb-24 pt-28 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <section className="rounded-[28px] border border-gray-200 bg-white px-6 py-5 shadow-sm sm:px-8 sm:py-6">
-          <p className="text-xs uppercase tracking-[0.28em] text-gray-500">Reservations</p>
-          <h1 className="mt-3 text-[28px] font-normal tracking-[-0.03em] text-gray-900 sm:text-[32px]">History</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-500">
-            Review past trips, seat assignments, and reservation status in one place.
-          </p>
+        <section className="overflow-hidden rounded-[32px] border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-8 text-white shadow-sm sm:px-10 sm:py-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">Reservations</p>
+          <div className="mt-3 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div>
+              <h1 className="text-3xl font-normal tracking-tight sm:text-4xl">Reservation history</h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Review past trips, seat assignments, and reservation status in one place.</p>
+            </div>
+            <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-100">Customer</span>
+          </div>
 
           <ReservationList
             reservations={reservations}

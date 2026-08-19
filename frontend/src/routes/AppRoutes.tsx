@@ -17,6 +17,7 @@ import PartnerHistoryPage from '../pages/dashboard/PartnerHistoryPage';
 import AdminDashboardPage from '../pages/dashboard/AdminDashboardPage';
 import ReservationHistoryPage from '../pages/reservations/ReservationHistoryPage';
 import ProfilePage from '../pages/ProfilePage';
+import SettingsPage from '../pages/SettingsPage';
 
 function AppShell() {
   const location = useLocation();
@@ -37,6 +38,14 @@ function AppShell() {
           element={
             <AuthRouteGuard>
               <ProfilePage />
+            </AuthRouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard/settings"
+          element={
+            <AuthRouteGuard>
+              <SettingsPage />
             </AuthRouteGuard>
           }
         />

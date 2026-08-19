@@ -77,10 +77,15 @@ export default function PartnerHistoryPage() {
   return (
     <main className="px-4 pb-24 pt-28 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Partner history</p>
-          <h1 className="mt-2 text-2xl font-normal text-black">Trip history for {getSessionDisplayName()}</h1>
-          <p className="mt-2 text-sm text-gray-600">Review all completed, cancelled, and archived partner trips.</p>
+        <section className="overflow-hidden rounded-[32px] border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-8 text-white shadow-sm sm:px-10 sm:py-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">Partner history</p>
+          <div className="mt-3 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div>
+              <h1 className="text-3xl font-normal tracking-tight sm:text-4xl">Trip history for {getSessionDisplayName()}</h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Review completed, cancelled, and archived trips from one clear timeline.</p>
+            </div>
+            <span className="w-fit rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-100">Partner</span>
+          </div>
         </section>
 
         {error ? <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}

@@ -31,6 +31,7 @@ class CurrentUserController extends AbstractController
         }
 
         return $this->json([
+            '@id' => $this->resolveResourceIri($user),
             'id' => $user->getId(),
             'email' => $user->getEmail(),
             'roles' => $user->getRoles(),
@@ -38,6 +39,8 @@ class CurrentUserController extends AbstractController
             'firstName' => method_exists($user, 'getFirstName') ? $user->getFirstName() : null,
             'lastName' => method_exists($user, 'getLastName') ? $user->getLastName() : null,
             'companyName' => method_exists($user, 'getCompanyName') ? $user->getCompanyName() : null,
+            'address' => method_exists($user, 'getAddress') ? $user->getAddress() : null,
+            'description' => method_exists($user, 'getDescription') ? $user->getDescription() : null,
             'phone' => $user->getPhone(),
             'createdAt' => $user->getCreatedAt()?->format(DATE_ATOM),
         ]);
@@ -49,6 +52,19 @@ class CurrentUserController extends AbstractController
             $user instanceof Administrator => 'admin',
             $user instanceof Partner => 'partner',
             default => 'customer',
+        };
+    }
+
+    private function resolveResourceIri(User $user): ?string
+    {
+        if (null === $user->getId()) {
+            return null;
+        }
+
+        return match (true) {
+            $user instanceof Administrator => '/api/administrators/'.$user->getId(),
+            $user instanceof Partner => '/api/partners/'.$user->getId(),
+            default => '/api/customers/'.$user->getId(),
         };
     }
 }

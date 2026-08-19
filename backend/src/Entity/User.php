@@ -75,6 +75,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Length(min: 8, max: 4096)]
     private ?string $plainPassword = null;
 
+    #[Groups(['user:write'])]
+    private ?string $currentPassword = null;
+
     #[Groups(['user:read', 'user:write'])]
     #[Assert\NotBlank]
     #[Assert\Regex(pattern: '/^\+?[0-9\s\-]{7,20}$/', message: 'Phone number must be valid (7-20 digits, optionally with + prefix).')]
@@ -169,6 +172,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPlainPassword(?string $plainPassword): static
     {
         $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    public function getCurrentPassword(): ?string
+    {
+        return $this->currentPassword;
+    }
+
+    public function setCurrentPassword(?string $currentPassword): static
+    {
+        $this->currentPassword = $currentPassword;
 
         return $this;
     }
