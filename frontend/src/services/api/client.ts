@@ -151,12 +151,72 @@ export const apiClient = {
   },
 
   getCities: () =>
-    request<{ id?: number; name?: string }[] | { 'hydra:member'?: { id?: number; name?: string }[] }>(
-      '/cities',
+    request<{ id?: number; name?: string; label?: string; title?: string }[] | { member?: { id?: number; name?: string; label?: string; title?: string }[]; 'hydra:member'?: { id?: number; name?: string; label?: string; title?: string }[] }>(
+      '/cities?itemsPerPage=1000',
       {
         auth: false,
       },
     ),
+
+  getPartnerVehicles: () =>
+    request<{ id?: number; '@id'?: string; brand?: string; licensePlate?: string; seatCapacity?: number; driverName?: string }[] | { member?: { id?: number; '@id'?: string; brand?: string; licensePlate?: string; seatCapacity?: number; driverName?: string }[]; 'hydra:member'?: { id?: number; '@id'?: string; brand?: string; licensePlate?: string; seatCapacity?: number; driverName?: string }[] }>('/vehicles?itemsPerPage=1000', {
+      method: 'GET',
+    }),
+
+  getPartnerRoutes: () =>
+    request<{ id?: number; '@id'?: string; departureCity?: { name?: string } | string; destinationCity?: { name?: string } | string }[] | { member?: { id?: number; '@id'?: string; departureCity?: { name?: string } | string; destinationCity?: { name?: string } | string }[]; 'hydra:member'?: { id?: number; '@id'?: string; departureCity?: { name?: string } | string; destinationCity?: { name?: string } | string }[] }>('/routes?itemsPerPage=1000', {
+      method: 'GET',
+    }),
+
+  createRoute: (data: { departureCity: string; destinationCity: string }) =>
+    request<{ id?: number; '@id'?: string; departureCity?: { name?: string }; destinationCity?: { name?: string } }>('/routes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/ld+json' },
+      body: JSON.stringify(data),
+    }),
+
+  updateRoute: (iri: string, data: { departureCity: string; destinationCity: string }) =>
+    request<{ id?: number; '@id'?: string; departureCity?: { name?: string }; destinationCity?: { name?: string } }>(normalizeResourceIri(iri), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/merge-patch+json' },
+      body: JSON.stringify(data),
+    }),
+
+  deleteRoute: (iri: string) =>
+    request<void>(normalizeResourceIri(iri), { method: 'DELETE' }),
+
+  createVehicle: (data: { brand: string; licensePlate: string; seatCapacity: number; driverName: string }) =>
+    request<{ id?: number; '@id'?: string; brand?: string; licensePlate?: string; seatCapacity?: number; driverName?: string }>('/vehicles', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateVehicle: (iri: string, data: { brand: string; licensePlate: string; seatCapacity: number; driverName: string }) =>
+    request<{ id?: number; '@id'?: string; brand?: string; licensePlate?: string; seatCapacity?: number; driverName?: string }>(normalizeResourceIri(iri), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/merge-patch+json' },
+      body: JSON.stringify(data),
+    }),
+
+  deleteVehicle: (iri: string) =>
+    request<void>(normalizeResourceIri(iri), { method: 'DELETE' }),
+
+  createTrip: (data: { departureTime: string; price: number; route: string; vehicle: string }) =>
+    request<{ id?: number; '@id'?: string; departureTime?: string; price?: number; route?: unknown; vehicle?: unknown }>('/trips', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  findCustomerByPhone: (phone: string) =>
+    request<{ id?: number; '@id'?: string; firstName?: string; lastName?: string; phone?: string }>(`/customers/by-phone?phone=${encodeURIComponent(phone)}`, {
+      method: 'GET',
+    }),
+
+  createFreeReservation: (data: { customerId: number | string; tripId: number | string; seatNumber: number }) =>
+    request<{ id?: number; customer?: string; trip?: string; seatNumber?: number | null; status?: string }>('/reservations/for-customer', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 
   getTrip: (iri: string) =>
     request<{ id?: number; departureTime?: string; price?: number; status?: string; route?: string | { departureCity?: { name?: string }; destinationCity?: { name?: string } }; vehicle?: string | { id?: number; seatCapacity?: number | null; brand?: string; licensePlate?: string; driverName?: string } }>(normalizeResourceIri(iri), {

@@ -67,8 +67,8 @@ class PartnerExtension implements QueryCollectionExtensionInterface, QueryItemEx
         if (Vehicle::class === $resourceClass) {
             // Filter vehicles where Owner matches the logged-in Partner
             if ($user instanceof Partner) {
-                $queryBuilder->andWhere(sprintf('%s.Owner = :current_partner', $rootAlias))
-                    ->setParameter('current_partner', $user);
+                $queryBuilder->andWhere(sprintf('%s.owner = :current_partner', $rootAlias))
+                ->setParameter('current_partner', $user);
             }
         }
 

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { apiClient } from '../services/api/client';
 import SeatSelection from '../components/trips/SeatSelection';
 import { createPortal } from 'react-dom';
+import CityAutocomplete from '../components/forms/CityAutocomplete';
 
 type Trip = {
   id?: number;
@@ -41,8 +42,6 @@ export default function HomePage() {
   const [departureTime, setDepartureTime] = useState('');
   const [trips, setTrips] = useState<Trip[]>([]);
   const [cities, setCities] = useState<City[]>([]);
-  const [activeCityField, setActiveCityField] = useState<'departure' | 'arrival' | null>(null);
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [error, setError] = useState('');
@@ -56,33 +55,9 @@ export default function HomePage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
 
-  const cityNames = useMemo(
-    () =>
-      (Array.isArray(cities) ? cities : [])
-        .flatMap((city) => {
-          if (!city) return [];
-
-          const rawName =
-            typeof city.name === 'string'
-              ? city.name
-              : typeof (city as { '@id'?: string; '@type'?: string; label?: string; title?: string }).label === 'string'
-                ? (city as { label?: string }).label
-                : typeof (city as { title?: string }).title === 'string'
-                  ? (city as { title?: string }).title
-                  : '';
-
-          const name = (rawName ?? '').trim();
-          return name ? [name] : [];
-        })
-        .filter((name, index, list) => list.indexOf(name) === index),
-    [cities],
-  );
-
   const scheduledTrips = useMemo(() => trips.filter((trip) => trip.status === 'scheduled'), [trips]);
 
   const activeTrip = useMemo(() => trips.find((trip) => trip.id === activeTripId) ?? null, [trips, activeTripId]);
-
-  const activeCityValue = activeCityField === 'departure' ? departureCity : arrivalCity;
 
   const isTripExpanded = (trip: Trip, index: number) => {
     if (typeof trip.id === 'number') return expandedTripIds.includes(trip.id);
@@ -144,67 +119,6 @@ export default function HomePage() {
       setBooking(false);
     }
   };
-
-  const filteredCityNames = useMemo(() => {
-    const normalized = activeCityValue.trim().toLowerCase();
-    return normalized === ''
-      ? cityNames
-      : cityNames.filter((name) => name.toLowerCase().includes(normalized));
-  }, [activeCityValue, cityNames]);
-
-  const selectedCitySetter = activeCityField === 'departure' ? setDepartureCity : setArrivalCity;
-
-  const closeCityDropdown = () => {
-    setActiveCityField(null);
-    setHighlightedIndex(0);
-  };
-
-  const openCityDropdown = (field: 'departure' | 'arrival') => {
-    setActiveCityField(field);
-    setHighlightedIndex(0);
-  };
-
-  const handleCityFocus = (field: 'departure' | 'arrival') => {
-    openCityDropdown(field);
-  };
-
-  const handleCityKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!activeCityField) return;
-
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      setHighlightedIndex((current) => Math.min(current + 1, filteredCityNames.length - 1));
-    }
-
-    if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      setHighlightedIndex((current) => Math.max(current - 1, 0));
-    }
-
-    if (event.key === 'Enter' && filteredCityNames[highlightedIndex]) {
-      event.preventDefault();
-      selectedCitySetter(filteredCityNames[highlightedIndex]);
-      closeCityDropdown();
-    }
-
-    if (event.key === 'Escape') {
-      closeCityDropdown();
-    }
-  };
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (searchFormRef.current && !searchFormRef.current.contains(event.target as Node)) {
-        closeCityDropdown();
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, []);
 
   useEffect(() => {
     const loadCities = async () => {
@@ -338,85 +252,9 @@ export default function HomePage() {
       <main className="px-4 pb-24 pt-28 sm:px-6 lg:px-8">
         <section className="mx-auto mt-10 max-w-4xl rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
           <form ref={searchFormRef} onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-4 md:items-end">
-            <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
-              Departure city
-              <div className="relative">
-                <input
-                  className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
-                  value={departureCity}
-                  onFocus={() => handleCityFocus('departure')}
-                  onChange={(e) => {
-                    setDepartureCity(e.target.value);
-                    setActiveCityField('departure');
-                    setHighlightedIndex(0);
-                  }}
-                  onKeyDown={handleCityKeyDown}
-                  placeholder={citiesLoading ? 'Loading cities...' : 'Casablanca'}
-                  autoComplete="off"
-                />
-                {activeCityField === 'departure' && filteredCityNames.length > 0 ? (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
-                    {filteredCityNames.map((name, index) => (
-                      <button
-                        key={name}
-                        type="button"
-                        className={`block w-full px-3 py-2 text-left text-xs ${
-                          index === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                        onMouseEnter={() => setHighlightedIndex(index)}
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                          setDepartureCity(name);
-                          closeCityDropdown();
-                        }}
-                      >
-                        {name}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </label>
+            <CityAutocomplete label="Departure city" value={departureCity} cities={cities} loading={citiesLoading} onChange={setDepartureCity} />
 
-            <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
-              Arrival city
-              <div className="relative">
-                <input
-                  className="w-full rounded-2xl border border-gray-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
-                  value={arrivalCity}
-                  onFocus={() => handleCityFocus('arrival')}
-                  onChange={(e) => {
-                    setArrivalCity(e.target.value);
-                    setActiveCityField('arrival');
-                    setHighlightedIndex(0);
-                  }}
-                  onKeyDown={handleCityKeyDown}
-                  placeholder={citiesLoading ? 'Loading cities...' : 'Rabat'}
-                  autoComplete="off"
-                />
-                {activeCityField === 'arrival' && filteredCityNames.length > 0 ? (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
-                    {filteredCityNames.map((name, index) => (
-                      <button
-                        key={name}
-                        type="button"
-                        className={`block w-full px-3 py-2 text-left text-xs ${
-                          index === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                        onMouseEnter={() => setHighlightedIndex(index)}
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                          setArrivalCity(name);
-                          closeCityDropdown();
-                        }}
-                      >
-                        {name}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </label>
+            <CityAutocomplete label="Arrival city" value={arrivalCity} cities={cities} loading={citiesLoading} placeholder="Rabat" onChange={setArrivalCity} />
 
             <label className="flex flex-col gap-2 text-xs font-medium text-gray-700">
               Departure time

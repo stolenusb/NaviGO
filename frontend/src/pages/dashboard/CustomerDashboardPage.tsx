@@ -66,7 +66,7 @@ export default function CustomerDashboardPage() {
   return (
     <main className="px-4 pb-24 pt-28 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        <section className="overflow-hidden rounded-[32px] border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-8 text-white shadow-sm sm:px-10 sm:py-10">
+        <section className="overflow-hidden rounded-[32px] border border-slate-800 bg-linear-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-8 text-white shadow-sm sm:px-10 sm:py-10">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">Customer dashboard</p>
           <div className="mt-3 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div>

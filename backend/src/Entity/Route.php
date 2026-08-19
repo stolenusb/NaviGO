@@ -31,9 +31,11 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Post(
             security: 'is_granted("ROLE_PARTNER")',
+            denormalizationContext: ['groups' => ['route:write']],
         ),
         new Patch(
             security: 'is_granted("ROLE_PARTNER") and object.getOwner() == user',
+            denormalizationContext: ['groups' => ['route:write']],
         ),
         new Delete(
             security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_PARTNER") and object.getOwner() == user)'
@@ -51,13 +53,13 @@ class Route
     #[Assert\NotNull]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['route:read'])]
+    #[Groups(['route:read', 'route:write'])]
     private ?City $departureCity = null;
 
     #[Assert\NotNull]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['route:read'])]
+    #[Groups(['route:read', 'route:write'])]
     private ?City $destinationCity = null;
 
     #[ORM\ManyToOne(inversedBy: 'routes')]

@@ -196,7 +196,7 @@ export default function SettingsPage() {
     <main className="min-h-screen px-4 pb-24 pt-28 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <section className="overflow-hidden rounded-[32px] border border-gray-200 bg-white shadow-sm">
-          <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-8 text-white sm:px-10 sm:py-10">
+          <div className="bg-linear-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-8 text-white sm:px-10 sm:py-10">
             <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">Account settings</p>

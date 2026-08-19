@@ -14,6 +14,8 @@ import MainNavbar from '../components/navigation/MainNavbar';
 import CustomerDashboardPage from '../pages/dashboard/CustomerDashboardPage';
 import PartnerDashboardPage from '../pages/dashboard/PartnerDashboardPage';
 import PartnerHistoryPage from '../pages/dashboard/PartnerHistoryPage';
+import PartnerRoutesPage from '../pages/dashboard/PartnerRoutesPage';
+import PartnerVehiclesPage from '../pages/dashboard/PartnerVehiclesPage';
 import AdminDashboardPage from '../pages/dashboard/AdminDashboardPage';
 import ReservationHistoryPage from '../pages/reservations/ReservationHistoryPage';
 import ProfilePage from '../pages/ProfilePage';
@@ -89,6 +91,8 @@ function AppShell() {
             </AuthRouteGuard>
           }
         />
+        <Route path="/dashboard/partner/routes" element={<AuthRouteGuard><RoleRouteGuard allowedRoles={['partner']}><PartnerRoutesPage /></RoleRouteGuard></AuthRouteGuard>} />
+        <Route path="/dashboard/partner/vehicles" element={<AuthRouteGuard><RoleRouteGuard allowedRoles={['partner']}><PartnerVehiclesPage /></RoleRouteGuard></AuthRouteGuard>} />
         <Route
           path="/dashboard/admin"
           element={
